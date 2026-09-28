@@ -153,7 +153,7 @@
     .site-card:hover { border-color: rgba(var(--accent-rgb),.34); transform: translateY(-2px); }
     .site-logo {
       flex: 0 0 auto; width: 66px; height: 66px; border-radius: 50%; display: grid; place-items: center;
-      font-weight: 950; font-size: 20px; letter-spacing: -.06em; background: var(--bg); border: 1px solid var(--line); color: var(--accent);
+      font-weight: 950; font-size: 20px; letter-spacing: -.06em; background: var(--bg); border: 1px solid var(--line); color: var(--accent); overflow: hidden;
     }
     .site-name { font-size: 19px; font-weight: 880; letter-spacing: -.03em; }
     .site-meta { color: var(--muted); font-size: 12px; margin-top: 5px; }
@@ -195,6 +195,55 @@
     .stat-dot::before { content: "•"; margin-right: 7px; opacity: .55; }
     .chev { color: var(--muted); font-size: 21px; opacity: .65; }
     .empty { border: 1px dashed var(--line); border-radius: 18px; padding: 42px 18px; text-align: center; color: var(--muted); }
+
+    .edit-banner {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      margin: 18px 0 16px; padding: 12px 14px; border: 1px solid rgba(var(--accent-rgb),.25);
+      border-radius: 15px; background: rgba(var(--accent-rgb),.06);
+    }
+    .edit-banner strong { font-size: 12px; }
+    .edit-banner span { color: var(--muted); font-size: 11px; }
+    .edit-badge {
+      flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+      background: var(--field); border: 1px solid var(--line); color: var(--accent); font-size: 14px;
+    }
+    .edit-site-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+    .edit-site-card {
+      border: 1px solid var(--line); background: var(--panel); border-radius: 18px; padding: 14px;
+      display: flex; align-items: center; gap: 12px; cursor: pointer; text-align: left;
+    }
+    .edit-site-card:hover, .edit-player-row:hover { border-color: rgba(var(--accent-rgb),.42); }
+    .edit-site-info { min-width: 0; flex: 1; }
+    .edit-site-name { font-weight: 850; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .edit-site-nickname { color: var(--muted); font-size: 11px; margin-top: 3px; }
+    .edit-player-row {
+      width: 100%; border: 1px solid var(--line); background: var(--panel); border-radius: 16px; padding: 11px 13px;
+      display: flex; align-items: center; gap: 12px; cursor: pointer; text-align: left;
+    }
+    .image-editor {
+      display: flex; align-items: center; gap: 14px; margin: 4px 0 16px;
+      padding: 12px; border: 1px solid var(--line); background: var(--field); border-radius: 15px;
+    }
+    .image-editor-preview {
+      width: 72px; height: 72px; border-radius: 50%; overflow: hidden; flex: 0 0 auto;
+      background: var(--panel-2); border: 1px solid var(--line); display: grid; place-items: center;
+      font-weight: 900; color: var(--muted);
+    }
+    .image-editor-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .image-actions { display: grid; gap: 7px; }
+    .upload-label {
+      display: inline-flex; align-items: center; justify-content: center; width: fit-content;
+      border: 1px solid var(--line); background: var(--button); border-radius: 11px; padding: 8px 11px;
+      cursor: pointer; font-size: 11px; font-weight: 800;
+    }
+    .upload-label input { display: none; }
+    .settings-nav { display: grid; gap: 8px; }
+    .settings-nav-btn {
+      width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      border: 1px solid var(--line); background: var(--field); color: var(--text);
+      border-radius: 13px; padding: 12px 13px; cursor: pointer; text-align: left;
+    }
+    .settings-nav-btn small { display: block; color: var(--muted); font-size: 10px; margin-top: 2px; font-weight: 500; }
 
     .profile-hero {
       margin-top: 20px; border: 1px solid var(--line); border-radius: 26px; padding: 24px;
@@ -380,6 +429,7 @@
       .controls .primary { white-space: nowrap; }
       .comment-form { align-items: stretch; }
       .comment-form .primary { padding-inline: 13px; }
+      .edit-site-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -412,9 +462,9 @@
     const SETTINGS_KEY = "playerTells_settings_v1";
 
     const seedSites = [
-      { id: "nightwire", name: "NightWire Poker", initials: "NW" },
-      { id: "riverfox", name: "RiverFox", initials: "RF" },
-      { id: "stackhouse", name: "StackHouse", initials: "SH" }
+      { id: "nightwire", name: "NightWire Poker", initials: "NW", nickname: "", avatar: "" },
+      { id: "riverfox", name: "RiverFox", initials: "RF", nickname: "", avatar: "" },
+      { id: "stackhouse", name: "StackHouse", initials: "SH", nickname: "", avatar: "" }
     ];
 
     const seedNames = {
@@ -505,6 +555,11 @@
 
     function migrateState(state) {
       state.sites = state.sites || seedSites;
+      state.sites.forEach(function(site) {
+        site.avatar = site.avatar || "";
+        site.nickname = site.nickname || "";
+        site.initials = site.initials || initials(site.name);
+      });
       state.players = state.players || [];
       state.players.forEach(function(p, index) {
         p.aliases = p.aliases || [];
@@ -643,10 +698,19 @@
       '</div>';
     }
 
+    function siteLogoHtml(site, cls) {
+      const className = cls || "site-logo";
+      return '<div class="' + className + '">' +
+        (site.avatar ? '<img src="' + esc(site.avatar) + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">' : esc(site.initials || initials(site.name))) +
+      '</div>';
+    }
+
     function render() {
       if (route.screen === "sites") renderSites();
       if (route.screen === "players") renderPlayers();
       if (route.screen === "profile") renderProfile();
+      if (route.screen === "editSites") renderEditSites();
+      if (route.screen === "editPlayers") renderEditPlayers();
       window.scrollTo({ top: 0, behavior: "instant" });
     }
 
@@ -664,8 +728,10 @@
             db.sites.map(function(site) {
               const count = db.players.filter(function(p) { return p.siteId === site.id; }).length;
               return '<button class="site-card" data-site="' + esc(site.id) + '">' +
-                '<div class="site-logo">' + esc(site.initials) + '</div>' +
-                '<div><div class="site-name">' + esc(site.name) + '</div><div class="site-meta">' + count + ' players logged</div></div>' +
+                siteLogoHtml(site, "site-logo") +
+                '<div><div class="site-name">' + esc(site.name) + '</div>' +
+                (site.nickname ? '<div class="site-meta">' + esc(site.nickname) + '</div>' : '') +
+                '<div class="site-meta">' + count + ' players logged</div></div>' +
               '</button>';
             }).join("") +
           '</section>' +
@@ -881,6 +947,10 @@
           '<div class="accent-preview"></div>' +
           '<div><div class="tiny">Changes buttons, markers and highlights.</div>' +
           '<button class="ghost change-hue-btn" id="changeHue" type="button">Change hue</button></div>' +
+        '</div></div>' +
+        '<div class="setting-row"><div class="setting-title">Manage</div><div class="settings-nav">' +
+          '<button class="settings-nav-btn" id="editPlayersBtn"><span><strong>Edit players</strong><small>Names, aliases and profile pictures</small></span><span>›</span></button>' +
+          '<button class="settings-nav-btn" id="editSitesBtn"><span><strong>Edit sites</strong><small>Names, nicknames and site pictures</small></span><span>›</span></button>' +
         '</div></div>'
       );
 
@@ -894,6 +964,16 @@
       });
 
       document.getElementById("changeHue").onclick = openColourPicker;
+      document.getElementById("editPlayersBtn").onclick = function() {
+        closeModal();
+        route = { screen: "editPlayers", siteId: null, playerId: null };
+        render();
+      };
+      document.getElementById("editSitesBtn").onclick = function() {
+        closeModal();
+        route = { screen: "editSites", siteId: null, playerId: null };
+        render();
+      };
     }
 
     function openColourPicker() {
@@ -1009,18 +1089,199 @@
       updateColour();
     }
 
+
+    function renderEditSites() {
+      document.getElementById("app").innerHTML =
+        '<div class="shell">' +
+          header() +
+          '<button class="back" id="exitSiteEdit">← Back</button>' +
+          '<div class="page-head"><div><div class="eyebrow">Settings</div><h2>Edit sites</h2></div></div>' +
+          '<div class="edit-banner"><div><strong>Edit mode</strong><br><span>Tap a site to change its details.</span></div><div class="edit-badge">✎</div></div>' +
+          '<div class="edit-site-grid">' +
+            db.sites.map(function(site) {
+              return '<button class="edit-site-card" data-edit-site="' + esc(site.id) + '">' +
+                siteLogoHtml(site, "site-logo") +
+                '<div class="edit-site-info"><div class="edit-site-name">' + esc(site.name) + '</div>' +
+                '<div class="edit-site-nickname">' + esc(site.nickname || "No nickname") + '</div></div>' +
+                '<span class="chev">›</span>' +
+              '</button>';
+            }).join("") +
+          '</div>' +
+        '</div>';
+
+      bindHeader();
+      document.getElementById("exitSiteEdit").onclick = goSites;
+      document.querySelectorAll("[data-edit-site]").forEach(function(btn) {
+        btn.onclick = function() { openEditSite(siteById(btn.dataset.editSite)); };
+      });
+    }
+
+    function renderEditPlayers() {
+      const players = db.players.slice().sort(function(a,b) {
+        return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+      });
+
+      document.getElementById("app").innerHTML =
+        '<div class="shell">' +
+          header() +
+          '<button class="back" id="exitPlayerEdit">← Back</button>' +
+          '<div class="page-head"><div><div class="eyebrow">Settings</div><h2>Edit players</h2></div></div>' +
+          '<div class="edit-banner"><div><strong>Edit mode</strong><br><span>Search, then tap a player to edit them.</span></div><div class="edit-badge">✎</div></div>' +
+          '<div class="controls"><div class="search-wrap"><input id="editPlayerSearch" class="search" placeholder="Search all players…" autocomplete="off"></div></div>' +
+          '<div id="editPlayerList" class="player-list"></div>' +
+        '</div>';
+
+      bindHeader();
+      document.getElementById("exitPlayerEdit").onclick = goSites;
+
+      function drawEditPlayers(query) {
+        const q = normalizeSearch(query);
+        const filtered = players.filter(function(p) {
+          if (!q) return true;
+          return [p.name].concat(p.aliases || []).map(normalizeSearch).some(function(x) { return x.includes(q); });
+        });
+        const wrap = document.getElementById("editPlayerList");
+        wrap.innerHTML = filtered.length ? filtered.map(function(p) {
+          const site = siteById(p.siteId);
+          return '<button class="edit-player-row" data-edit-player="' + esc(p.id) + '">' +
+            avatarHtml({ name:p.name, avatar:p.avatar }, "avatar") +
+            '<div class="player-main"><div class="player-name">' + esc(p.name) + '</div>' +
+            '<div class="player-sub">' + esc((p.aliases || []).join(" · ") || "No aliases") + '</div>' +
+            '<div class="player-stats"><span>' + esc(site ? site.name : "Unknown site") + '</span></div></div>' +
+            '<div class="edit-badge">✎</div>' +
+          '</button>';
+        }).join("") : '<div class="empty">No players match that search.</div>';
+
+        document.querySelectorAll("[data-edit-player]").forEach(function(btn) {
+          btn.onclick = function() { openEditPlayer(playerById(btn.dataset.editPlayer)); };
+        });
+      }
+
+      document.getElementById("editPlayerSearch").addEventListener("input", function(e) { drawEditPlayers(e.target.value); });
+      drawEditPlayers("");
+    }
+
+    function resizeImageFile(file, callback) {
+      if (!file || !file.type || !file.type.startsWith("image/")) return callback("");
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          const size = 360;
+          const canvas = document.createElement("canvas");
+          canvas.width = size; canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          const scale = Math.max(size / img.width, size / img.height);
+          const w = img.width * scale, h = img.height * scale;
+          ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+          callback(canvas.toDataURL("image/jpeg", .82));
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function imageEditorMarkup(name, avatar) {
+      return '<div class="image-editor">' +
+        '<div class="image-editor-preview" id="imageEditPreview">' +
+          (avatar ? '<img src="' + esc(avatar) + '" alt="">' : esc(initials(name))) +
+        '</div>' +
+        '<div class="image-actions">' +
+          '<label class="upload-label">Choose picture<input id="imageUploadInput" type="file" accept="image/*"></label>' +
+          '<button class="text-btn" id="removeImageBtn" type="button">Remove picture</button>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function bindImageEditor(initialAvatar, onChange) {
+      let value = initialAvatar || "";
+      const input = document.getElementById("imageUploadInput");
+      const remove = document.getElementById("removeImageBtn");
+      if (input) input.onchange = function() {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        resizeImageFile(file, function(dataUrl) {
+          value = dataUrl;
+          document.getElementById("imageEditPreview").innerHTML = '<img src="' + esc(dataUrl) + '" alt="">';
+          onChange(value);
+        });
+      };
+      if (remove) remove.onclick = function() {
+        value = "";
+        document.getElementById("imageEditPreview").textContent = "—";
+        onChange(value);
+      };
+    }
+
+    function openEditPlayer(player) {
+      if (!player) return;
+      let editedAvatar = player.avatar || "";
+      openModal(
+        '<div class="modal-head"><div><div class="eyebrow">Edit player</div><h3>' + esc(player.name) + '</h3></div><button class="modal-close" data-close>×</button></div>' +
+        '<form id="editPlayerForm">' +
+          imageEditorMarkup(player.name, editedAvatar) +
+          '<div class="field"><label>Username</label><input name="name" required value="' + esc(player.name) + '"></div>' +
+          '<div class="field"><label>Nicknames / aliases</label><input name="aliases" value="' + esc((player.aliases || []).join(", ")) + '" placeholder="Comma separated"></div>' +
+          '<div class="form-actions"><button class="ghost" type="button" data-close>Cancel</button><button class="primary" type="submit">Save changes</button></div>' +
+        '</form>'
+      );
+
+      bindImageEditor(editedAvatar, function(v) { editedAvatar = v; });
+      document.getElementById("editPlayerForm").onsubmit = function(e) {
+        e.preventDefault();
+        const form = new FormData(e.target);
+        player.name = String(form.get("name") || "").trim() || player.name;
+        player.aliases = String(form.get("aliases") || "").split(",").map(function(x) { return x.trim(); }).filter(Boolean);
+        player.avatar = editedAvatar;
+        saveState();
+        closeModal();
+        renderEditPlayers();
+        toast("Player updated");
+      };
+    }
+
+    function openEditSite(site) {
+      if (!site) return;
+      let editedAvatar = site.avatar || "";
+      openModal(
+        '<div class="modal-head"><div><div class="eyebrow">Edit site</div><h3>' + esc(site.name) + '</h3></div><button class="modal-close" data-close>×</button></div>' +
+        '<form id="editSiteForm">' +
+          imageEditorMarkup(site.name, editedAvatar) +
+          '<div class="field"><label>Site name</label><input name="name" required value="' + esc(site.name) + '"></div>' +
+          '<div class="field"><label>Nickname</label><input name="nickname" value="' + esc(site.nickname || "") + '" placeholder="Optional short name"></div>' +
+          '<div class="form-actions"><button class="ghost" type="button" data-close>Cancel</button><button class="primary" type="submit">Save changes</button></div>' +
+        '</form>'
+      );
+
+      bindImageEditor(editedAvatar, function(v) { editedAvatar = v; });
+      document.getElementById("editSiteForm").onsubmit = function(e) {
+        e.preventDefault();
+        const form = new FormData(e.target);
+        site.name = String(form.get("name") || "").trim() || site.name;
+        site.nickname = String(form.get("nickname") || "").trim();
+        site.initials = initials(site.name);
+        site.avatar = editedAvatar;
+        saveState();
+        closeModal();
+        renderEditSites();
+        toast("Site updated");
+      };
+    }
+
     function openAddPlayer() {
       const site = siteById(route.siteId);
+      let newPlayerAvatar = "";
       openModal(
         '<div class="modal-head"><div><div class="eyebrow">' + esc(site.name) + '</div><h3>Add player</h3></div><button class="modal-close" data-close>×</button></div>' +
         '<form id="addPlayerForm">' +
           '<div class="field"><label>Username</label><input name="name" required placeholder="e.g. Big_Toe77"></div>' +
           '<div class="field"><label>Aliases <span class="tiny">(optional, comma separated)</span></label><input name="aliases" placeholder="Other usernames, nicknames…"></div>' +
-          '<div class="field"><label>Profile image URL <span class="tiny">(optional for prototype)</span></label><input name="avatar" placeholder="https://…"></div>' +
+          imageEditorMarkup("New player", "") +
           '<div class="form-actions"><button class="ghost" type="button" data-close>Cancel</button><button class="primary" type="submit">Add player</button></div>' +
         '</form>'
       );
 
+      bindImageEditor("", function(v) { newPlayerAvatar = v; });
       document.getElementById("addPlayerForm").addEventListener("submit", function(e) {
         e.preventDefault();
         const form = new FormData(e.target);
@@ -1032,7 +1293,7 @@
           siteId: route.siteId,
           name: name,
           aliases: String(form.get("aliases") || "").split(",").map(function(x) { return x.trim(); }).filter(Boolean),
-          avatar: String(form.get("avatar") || "").trim(),
+          avatar: newPlayerAvatar,
           tags: [],
           surveys: [],
           comments: []
