@@ -408,13 +408,16 @@
     .comment-action:hover { color: var(--accent); }
     .comment-action.delete:hover { color: #ff6b6b; }
 
+    .profile-action-row {
+      display: flex; justify-content: flex-end; align-items: center;
+      margin-top: 12px; margin-bottom: 8px;
+    }
     .profile-hero {
-      margin-top: 20px; border: 1px solid var(--line); border-radius: 26px; padding: 24px;
-      background: var(--panel); box-shadow: var(--shadow); display: grid; grid-template-columns: 132px 1fr auto; gap: 34px; align-items: center;
+      margin-top: 0; border: 1px solid var(--line); border-radius: 26px; padding: 24px;
+      background: var(--panel); box-shadow: var(--shadow); display: grid; grid-template-columns: 132px 1fr; gap: 34px; align-items: center;
     }
     .profile-avatar { width: 132px; height: 132px; font-size: 28px; }
     .survey-cta {
-      justify-self: end; align-self: center;
       padding: 8px 11px; border-radius: 11px;
       font-size: 11px; font-weight: 850;
       box-shadow: none;
@@ -639,7 +642,7 @@
       .hero { padding-top: 38px; }
       .profile-hero { grid-template-columns: 94px 1fr; gap: 20px; padding: 18px; }
       .profile-avatar { width: 94px; height: 94px; font-size: 20px; }
-      .profile-hero .survey-cta { grid-column: 1 / -1; width: auto; justify-self: end; padding: 8px 11px; }
+      .profile-action-row { margin-top: 10px; margin-bottom: 7px; }
       .page-head { align-items: start; }
       .controls { align-items: stretch; }
       .controls .primary { white-space: nowrap; }
@@ -2061,12 +2064,12 @@
         '<div class="shell">' +
           header() +
           '<button class="back" id="backPlayers">← ' + esc(site.name) + '</button>' +
+          '<div class="profile-action-row"><button class="primary survey-cta" id="addSurvey">+ Add survey</button></div>' +
           '<section class="profile-hero">' +
             avatarHtml({ name: player.name, avatar: player.avatar }, "avatar profile-avatar") +
             '<div><div class="eyebrow">' + esc(site.name) + '</div><div class="profile-title">' + esc(player.name) + '</div>' +
             '<div class="aliases">' + aliasHtml + '</div>' +
             '<div class="profile-meta">' + profileMeta.map(function(x) { return '<span class="meta-chip">' + esc(x) + '</span>'; }).join("") + '</div></div>' +
-            '<button class="primary survey-cta" id="addSurvey">+ Add survey</button>' +
           '</section>' +
           '<section class="player-summary">' +
             '<div class="player-summary-head"><strong>Summary</strong><button class="summary-edit" id="editSummaryBtn" type="button">Edit</button></div>' +
