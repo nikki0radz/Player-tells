@@ -272,12 +272,60 @@
     .choice-btn { padding: 11px 12px; font-size: 12px; }
     .choice-btn.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
     .colour-row { display: flex; align-items: center; gap: 12px; }
-    .colour-picker {
-      width: 46px; height: 40px; padding: 0; border: 1px solid var(--line); border-radius: 11px; overflow: hidden; background: var(--field); cursor: pointer;
+    .accent-preview {
+      width: 42px; height: 42px; border-radius: 50%; flex: 0 0 auto;
+      background: var(--accent); border: 3px solid var(--panel);
+      box-shadow: 0 0 0 1px var(--line), 0 0 18px rgba(var(--accent-rgb),.25);
     }
-    .colour-picker::-webkit-color-swatch-wrapper { padding: 4px; }
-    .colour-picker::-webkit-color-swatch { border: 0; border-radius: 7px; }
     .text-btn { border: 0; background: transparent; color: var(--muted); padding: 4px 0; cursor: pointer; font-size: 11px; }
+    .change-hue-btn { margin-top: 6px; padding: 9px 12px; border-radius: 11px; }
+
+    .colour-picker-panel { display: grid; gap: 18px; }
+    .colour-wheel-wrap {
+      width: min(78vw, 340px); aspect-ratio: 1; margin: 0 auto; position: relative;
+      display: grid; place-items: center;
+    }
+    .colour-wheel {
+      width: 100%; height: 100%; border-radius: 50%; position: relative; cursor: crosshair;
+      background:
+        radial-gradient(circle at center, rgba(255,255,255,1) 0%, rgba(255,255,255,.92) 5%, rgba(255,255,255,.38) 38%, rgba(255,255,255,0) 72%),
+        conic-gradient(from 90deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), 0 16px 42px rgba(0,0,0,.22);
+      touch-action: none;
+    }
+    .colour-wheel::after {
+      content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+      background: rgba(0,0,0,var(--wheel-darkness,.0));
+    }
+    .wheel-cursor {
+      position: absolute; width: 22px; height: 22px; border-radius: 50%;
+      border: 3px solid white; box-shadow: 0 0 0 1px rgba(0,0,0,.55), 0 2px 8px rgba(0,0,0,.45);
+      transform: translate(-50%,-50%); pointer-events: none; z-index: 2;
+    }
+    .brightness-wrap { display: grid; gap: 8px; }
+    .brightness-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+    .brightness-slider {
+      width: 100%; height: 10px; border-radius: 999px; appearance: none; -webkit-appearance: none;
+      background: linear-gradient(90deg,#000,var(--picker-base,#fff)); outline: none;
+    }
+    .brightness-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+      background: white; border: 2px solid #222; box-shadow: 0 1px 5px rgba(0,0,0,.35);
+    }
+    .brightness-slider::-moz-range-thumb {
+      width: 18px; height: 18px; border-radius: 50%; background: white; border: 2px solid #222;
+    }
+    .picker-preview-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .picker-current { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .picker-swatch { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); border: 1px solid var(--line); }
+    .hex-readout { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .recent-colours { display: flex; gap: 9px; flex-wrap: wrap; }
+    .recent-swatch {
+      width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--panel);
+      box-shadow: 0 0 0 1px var(--line); cursor: pointer;
+    }
+    .recent-swatch.active { box-shadow: 0 0 0 2px var(--accent); }
+    .recent-empty { color: var(--muted); font-size: 11px; }
 
     .option-list { display: grid; gap: 7px; }
     .option-btn {
@@ -513,10 +561,11 @@
         const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY));
         if (saved) return {
           theme: saved.theme === "light" ? "light" : "dark",
-          accent: /^#[0-9a-f]{6}$/i.test(saved.accent || "") ? saved.accent : "#c7ff3a"
+          accent: /^#[0-9a-f]{6}$/i.test(saved.accent || "") ? saved.accent : "#c7ff3a",
+          recentColors: Array.isArray(saved.recentColors) ? saved.recentColors.filter(function(c) { return /^#[0-9a-f]{6}$/i.test(c); }).slice(0, 8) : []
         };
       } catch (e) {}
-      return { theme: "dark", accent: "#c7ff3a" };
+      return { theme: "dark", accent: "#c7ff3a", recentColors: [] };
     }
 
     let db = loadState();
@@ -792,6 +841,42 @@
       });
     }
 
+    function rgbToHsv(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r,g,b), min = Math.min(r,g,b);
+      const d = max - min;
+      let h = 0;
+      if (d) {
+        if (max === r) h = 60 * (((g - b) / d) % 6);
+        else if (max === g) h = 60 * (((b - r) / d) + 2);
+        else h = 60 * (((r - g) / d) + 4);
+      }
+      if (h < 0) h += 360;
+      return { h: h, s: max === 0 ? 0 : d / max, v: max };
+    }
+
+    function hsvToHex(h, sVal, vVal) {
+      const c = vVal * sVal;
+      const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+      const m = vVal - c;
+      let r = 0, g = 0, b = 0;
+      if (h < 60) { r = c; g = x; }
+      else if (h < 120) { r = x; g = c; }
+      else if (h < 180) { g = c; b = x; }
+      else if (h < 240) { g = x; b = c; }
+      else if (h < 300) { r = x; b = c; }
+      else { r = c; b = x; }
+      const toHex = function(n) { return Math.round((n + m) * 255).toString(16).padStart(2, "0"); };
+      return "#" + toHex(r) + toHex(g) + toHex(b);
+    }
+
+    function rememberColour(hex) {
+      settings.recentColors = (settings.recentColors || []).filter(function(c) { return c.toLowerCase() !== hex.toLowerCase(); });
+      settings.recentColors.unshift(hex);
+      settings.recentColors = settings.recentColors.slice(0, 8);
+      saveSettings();
+    }
+
     function openSettings() {
       openModal(
         '<div class="modal-head"><h3>Settings</h3><button class="modal-close" data-close>×</button></div>' +
@@ -800,8 +885,9 @@
           '<button class="choice-btn' + (settings.theme === "light" ? ' active' : '') + '" data-theme-choice="light">Light</button>' +
         '</div></div>' +
         '<div class="setting-row"><div class="setting-title">Accent colour</div><div class="colour-row">' +
-          '<input class="colour-picker" id="accentPicker" type="color" value="' + esc(settings.accent) + '" aria-label="Accent colour">' +
-          '<div><div class="tiny">Changes buttons, markers and highlights.</div><button class="text-btn" id="resetAccent" type="button">Reset colour</button></div>' +
+          '<div class="accent-preview"></div>' +
+          '<div><div class="tiny">Changes buttons, markers and highlights.</div>' +
+          '<button class="ghost change-hue-btn" id="changeHue" type="button">Change hue</button></div>' +
         '</div></div>'
       );
 
@@ -814,18 +900,120 @@
         };
       });
 
-      document.getElementById("accentPicker").addEventListener("input", function(e) {
-        settings.accent = e.target.value;
+      document.getElementById("changeHue").onclick = openColourPicker;
+    }
+
+    function openColourPicker() {
+      const rgb = hexToRgb(settings.accent);
+      const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+      let picker = { h: hsv.h, s: hsv.s, v: hsv.v };
+      const recents = (settings.recentColors || []).slice(0, 8);
+
+      openModal(
+        '<div class="modal-head"><div><div class="eyebrow">Accent colour</div><h3>Choose a hue</h3></div><button class="modal-close" data-close>×</button></div>' +
+        '<div class="colour-picker-panel">' +
+          '<div class="colour-wheel-wrap"><div class="colour-wheel" id="colourWheel"><span class="wheel-cursor" id="wheelCursor"></span></div></div>' +
+          '<div class="brightness-wrap">' +
+            '<div class="brightness-head"><span class="setting-title" style="margin:0">Brightness</span><span class="hex-readout" id="hexReadout">' + esc(settings.accent.toUpperCase()) + '</span></div>' +
+            '<input class="brightness-slider" id="brightnessSlider" type="range" min="15" max="100" value="' + Math.round(picker.v * 100) + '">' +
+          '</div>' +
+          '<div class="picker-preview-row"><div class="picker-current"><span class="picker-swatch" id="pickerSwatch"></span><span class="tiny">Live preview</span></div>' +
+            '<button class="primary" id="doneColour" type="button">Done</button></div>' +
+          '<div><div class="setting-title">Recent colours</div><div class="recent-colours">' +
+            (recents.length ? recents.map(function(c) {
+              return '<button class="recent-swatch' + (c.toLowerCase() === settings.accent.toLowerCase() ? ' active' : '') + '" data-recent-colour="' + esc(c) + '" style="background:' + esc(c) + '" aria-label="' + esc(c) + '"></button>';
+            }).join("") : '<span class="recent-empty">Your recent colours will appear here.</span>') +
+          '</div></div>' +
+          '<button class="text-btn" id="resetAccent" type="button">Reset to default</button>' +
+        '</div>'
+      );
+
+      const wheel = document.getElementById("colourWheel");
+      const cursor = document.getElementById("wheelCursor");
+      const slider = document.getElementById("brightnessSlider");
+      const swatch = document.getElementById("pickerSwatch");
+      const readout = document.getElementById("hexReadout");
+
+      function updateCursor() {
+        const size = wheel.clientWidth;
+        const radius = size / 2;
+        const distance = picker.s * radius * .92;
+        const angle = (picker.h - 90) * Math.PI / 180;
+        cursor.style.left = (radius + Math.cos(angle) * distance) + "px";
+        cursor.style.top = (radius + Math.sin(angle) * distance) + "px";
+      }
+
+      function updateColour() {
+        const hex = hsvToHex(picker.h, picker.s, picker.v);
+        settings.accent = hex;
         saveSettings();
         applySettings();
+        swatch.style.background = hex;
+        readout.textContent = hex.toUpperCase();
+        const baseHex = hsvToHex(picker.h, picker.s, 1);
+        slider.style.setProperty("--picker-base", baseHex);
+        slider.style.background = "linear-gradient(90deg,#000," + baseHex + ")";
+        wheel.style.setProperty("--wheel-darkness", String(Math.max(0, 1 - picker.v) * .72));
+        requestAnimationFrame(updateCursor);
+      }
+
+      function chooseFromPointer(e) {
+        const rect = wheel.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = e.clientX - cx;
+        const dy = e.clientY - cy;
+        const radius = rect.width / 2;
+        const dist = Math.min(Math.sqrt(dx * dx + dy * dy), radius * .92);
+        picker.s = Math.max(0, Math.min(1, dist / (radius * .92)));
+        picker.h = (Math.atan2(dy, dx) * 180 / Math.PI + 450) % 360;
+        updateColour();
+      }
+
+      let dragging = false;
+      wheel.addEventListener("pointerdown", function(e) {
+        dragging = true;
+        wheel.setPointerCapture(e.pointerId);
+        chooseFromPointer(e);
+      });
+      wheel.addEventListener("pointermove", function(e) {
+        if (dragging) chooseFromPointer(e);
+      });
+      wheel.addEventListener("pointerup", function(e) {
+        dragging = false;
+        try { wheel.releasePointerCapture(e.pointerId); } catch (_) {}
+      });
+      wheel.addEventListener("pointercancel", function() { dragging = false; });
+
+      slider.addEventListener("input", function(e) {
+        picker.v = Number(e.target.value) / 100;
+        updateColour();
+      });
+
+      document.querySelectorAll("[data-recent-colour]").forEach(function(btn) {
+        btn.onclick = function() {
+          const c = btn.dataset.recentColour;
+          const rgbRecent = hexToRgb(c);
+          picker = rgbToHsv(rgbRecent.r, rgbRecent.g, rgbRecent.b);
+          slider.value = Math.round(picker.v * 100);
+          updateColour();
+        };
       });
 
       document.getElementById("resetAccent").onclick = function() {
-        settings.accent = "#c7ff3a";
-        saveSettings();
-        applySettings();
+        const def = hexToRgb("#c7ff3a");
+        picker = rgbToHsv(def.r, def.g, def.b);
+        slider.value = Math.round(picker.v * 100);
+        updateColour();
+      };
+
+      document.getElementById("doneColour").onclick = function() {
+        rememberColour(settings.accent);
+        closeModal();
         openSettings();
       };
+
+      updateColour();
     }
 
     function openAddPlayer() {
