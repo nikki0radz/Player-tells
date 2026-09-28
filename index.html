@@ -217,7 +217,15 @@
     .trait-scale {
       position: relative; height: 7px; border-radius: 99px; background: var(--track); margin-top: 13px;
     }
-    .trait-scale::before { content: ""; position: absolute; left: 50%; top: -3px; width: 1px; height: 13px; background: var(--line); }
+    .trait-ticks {
+      position: absolute; inset: -4px 0; display: flex; align-items: center; justify-content: space-between;
+      pointer-events: none;
+    }
+    .trait-ticks span {
+      width: 2px; height: 11px; border-radius: 2px; background: var(--line);
+    }
+    .trait-ticks span:first-child, .trait-ticks span:last-child { height: 8px; }
+    .trait-marker { z-index: 2; }
     .trait-marker {
       position: absolute; top: 50%; width: 17px; height: 17px; border-radius: 50%; background: var(--accent);
       border: 3px solid var(--panel); box-shadow: 0 0 0 1px rgba(var(--accent-rgb),.45), 0 0 13px rgba(var(--accent-rgb),.24);
@@ -382,23 +390,8 @@
     <div class="loader-wrap">
       <div class="logo-pulse-shell">
         <div class="loader-logo" aria-label="Player Tells">
-          <svg viewBox="0 0 300 390" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
-            <g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="square" stroke-linejoin="miter">
-              <path d="M150 38 L226 148 L150 342 L64 176 Z"/>
-              <path d="M188 118 L235 82 L232 137"/>
-              <path d="M224 132 C252 133 271 148 281 171 C259 183 238 185 216 176"/>
-            </g>
-            <path d="M92 179
-                     C111 158 134 153 150 153
-                     C175 153 197 160 211 180
-                     C216 188 216 205 207 214
-                     C193 227 174 229 154 222
-                     C137 216 126 218 111 222
-                     C96 225 82 217 80 203
-                     C79 194 83 186 92 179 Z"
-                  fill="currentColor"/>
-            <path d="M102 193 C110 179 122 179 130 193 Z" fill="#050607"/>
-            <path d="M169 193 C177 179 190 179 198 193 Z" fill="#050607"/>
+          <svg viewBox="0 0 402 521" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+            <path d="M 198 0 L 152 76 L 103 145 L 60 197 L 0 260 L 62 325 L 106 379 L 152 444 L 198 520 L 248 437 L 291 377 L 339 319 L 396 260 L 360 224 L 341 202 L 372 194 L 401 180 L 383 153 L 372 142 L 357 132 L 337 124 L 343 103 L 345 41 L 296 85 L 278 96 L 262 103 L 232 58 Z M 198 41 L 224 84 L 258 133 L 276 119 L 305 104 L 322 90 L 322 102 L 316 123 L 303 146 L 309 144 L 329 144 L 340 147 L 355 155 L 370 171 L 361 176 L 340 181 L 311 180 L 288 172 L 322 213 L 366 260 L 320 309 L 274 365 L 235 419 L 200 476 L 197 478 L 169 432 L 123 367 L 79 313 L 29 260 L 78 208 L 119 158 L 161 100 Z M 91 250 L 91 269 L 97 283 L 103 291 L 116 301 L 137 307 L 161 306 L 171 302 L 183 300 L 210 300 L 239 307 L 263 306 L 275 302 L 287 294 L 299 278 L 303 266 L 301 246 L 292 230 L 279 217 L 261 207 L 231 199 L 209 197 L 163 199 L 132 207 L 117 215 L 107 223 L 96 238 Z M 227 255 L 231 246 L 237 240 L 246 236 L 258 236 L 265 239 L 271 244 L 276 252 L 274 257 L 233 257 Z M 115 256 L 119 246 L 126 239 L 134 235 L 147 235 L 152 237 L 161 245 L 165 253 L 164 258 L 117 258 Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/>
           </svg>
         </div>
       </div>
@@ -1072,7 +1065,7 @@
         const voteCount = (player.surveys || []).filter(function(s) { return Number.isFinite(Number(s[t.key])); }).length;
         return '<button class="trait-card" data-trait="' + t.key + '">' +
           '<div class="trait-labels"><strong>' + esc(t.left) + '</strong><strong>' + esc(t.right) + '</strong></div>' +
-          '<div class="trait-scale"><span class="trait-marker" style="left:' + pct.toFixed(1) + '%"></span></div>' +
+          '<div class="trait-scale"><div class="trait-ticks">' + new Array(10).fill('<span></span>').join("") + '</div><span class="trait-marker" style="left:' + pct.toFixed(1) + '%"></span></div>' +
           '<div class="trait-hint">View ' + voteCount + (voteCount === 1 ? ' vote' : ' votes') + '</div>' +
         '</button>';
       }).join("");
