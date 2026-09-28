@@ -366,21 +366,29 @@
       color: var(--text); font-size: 11px; font-weight: 900; cursor: pointer;
     }
     .top-profile-btn img { width: 100%; height: 100%; object-fit: cover; }
+    .my-profile-shell .back { margin-top: 2px; }
     .my-profile-card {
-      margin-top: 20px; border: 1px solid var(--line); background: var(--panel); border-radius: 24px;
-      padding: 22px; display: flex; align-items: center; gap: 18px; box-shadow: var(--shadow);
+      margin-top: 12px; border: 1px solid var(--line); background: var(--panel); border-radius: 22px;
+      padding: 17px 18px; display: grid; grid-template-columns: 76px 1fr auto; align-items: center;
+      gap: 14px; box-shadow: var(--shadow);
     }
-    .my-profile-avatar { width: 86px; height: 86px; font-size: 20px; }
-    .my-profile-info { flex: 1; min-width: 0; }
-    .my-profile-name { font-size: 30px; font-weight: 950; letter-spacing: -.04em; }
-    .profile-stats-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-top: 14px; }
+    .my-profile-avatar { width: 76px; height: 76px; font-size: 18px; }
+    .my-profile-info { min-width: 0; }
+    .my-profile-name { font-size: 27px; line-height: 1; font-weight: 950; letter-spacing: -.04em; margin-top: 3px; }
+    .profile-stats-grid { display: flex; flex-wrap: wrap; gap: 13px; margin-top: 9px; }
     .profile-stat {
-      border: 1px solid var(--line); background: var(--field); border-radius: 14px; padding: 12px;
+      display: inline-flex; align-items: baseline; gap: 5px; border: 0; background: transparent; padding: 0;
     }
-    .profile-stat strong { display: block; font-size: 20px; }
+    .profile-stat strong { display: inline; font-size: 16px; }
     .profile-stat span { color: var(--muted); font-size: 10px; }
-    .history-section { margin-top: 28px; }
-    .history-list { display: grid; gap: 9px; }
+    .my-profile-edit {
+      padding: 8px 11px; border-radius: 11px; font-size: 10px; white-space: nowrap;
+    }
+    .history-section { margin-top: 22px; }
+    .history-list { display: grid; gap: 7px; }
+    .my-profile-shell .history-card { padding: 11px 12px; border-radius: 15px; }
+    .my-profile-shell .section-title { margin-bottom: 9px; }
+    .my-profile-shell .section-title h3 { font-size: 18px; }
     .history-card {
       border: 1px solid var(--line); background: var(--panel); border-radius: 16px; padding: 13px;
       cursor: pointer; text-align: left;
@@ -488,6 +496,52 @@
     }
     .audit-title { font-size: 11px; font-weight: 850; line-height: 1.4; }
     .audit-meta { color: var(--muted); font-size: 9px; margin-top: 3px; }
+
+    .player-row-actions {
+      flex: 0 0 auto; display: flex; align-items: center; gap: 6px;
+    }
+    .follow-icon-btn, .profile-follow-btn {
+      border: 1px solid var(--line); background: var(--field); color: var(--muted);
+      cursor: pointer; display: grid; place-items: center; transition: .15s ease;
+    }
+    .follow-icon-btn {
+      width: 31px; height: 31px; border-radius: 10px; font-size: 15px;
+    }
+    .profile-follow-btn {
+      min-height: 27px; padding: 5px 9px; border-radius: 9px; font-size: 10px; font-weight: 800;
+    }
+    .follow-icon-btn.active, .profile-follow-btn.active {
+      color: var(--accent); border-color: rgba(var(--accent-rgb),.38); background: rgba(var(--accent-rgb),.06);
+    }
+    .update-badge {
+      min-width: 27px; height: 27px; padding: 0 7px; border: 0; border-radius: 999px;
+      background: var(--accent); color: var(--on-accent); cursor: pointer;
+      display: inline-grid; place-items: center; font-size: 10px; font-weight: 950;
+      box-shadow: 0 0 0 3px rgba(var(--accent-rgb),.07);
+    }
+    .profile-actions-stack {
+      display: grid; justify-items: end; gap: 6px;
+    }
+    .profile-action-top { display: flex; align-items: center; gap: 6px; }
+    .followed-list { display: grid; gap: 7px; }
+    .followed-card {
+      border: 1px solid var(--line); background: var(--panel); border-radius: 15px; padding: 10px 11px;
+      display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 10px;
+      cursor: pointer;
+    }
+    .followed-card:hover { border-color: rgba(var(--accent-rgb),.34); }
+    .followed-card .avatar { width: 40px; height: 40px; font-size: 10px; }
+    .followed-actions { display: flex; align-items: center; gap: 6px; }
+    .notification-row {
+      display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: start;
+      border: 1px solid var(--line); background: var(--field); border-radius: 14px; padding: 10px;
+      position: relative;
+    }
+    .notification-row.new { border-color: rgba(var(--accent-rgb),.34); background: rgba(var(--accent-rgb),.045); }
+    .notification-new {
+      display: inline-block; margin-left: 5px; color: var(--accent); font-size: 8px;
+      text-transform: uppercase; letter-spacing: .09em; font-weight: 900;
+    }
 
     .comments-section { margin-top: 34px; }
     .section-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
@@ -636,8 +690,11 @@
       .comment-form { align-items: stretch; }
       .comment-form .primary { padding-inline: 13px; }
       .edit-site-grid { grid-template-columns: 1fr; }
-      .my-profile-card { align-items: flex-start; flex-wrap: wrap; }
-      .my-profile-card .primary { width: 100%; }
+      .my-profile-card { grid-template-columns: 68px 1fr; padding: 15px; align-items: center; }
+      .my-profile-avatar { width: 68px; height: 68px; }
+      .my-profile-card .my-profile-edit { grid-column: 2; width: auto; justify-self: start; margin-top: -3px; }
+      .profile-actions-stack { grid-column: 1 / -1; width: 100%; display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; }
+      .profile-actions-stack .survey-cta { width: auto; justify-self: auto; }
     }
   </style>
 </head>
@@ -648,24 +705,25 @@
     <div class="loader-wrap">
       <div class="logo-pulse-shell">
         <div class="loader-logo" aria-label="Player Tells">
-          <svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision">
-  <g fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M150 24 L193 92 L219 80 L247 56 L245 101"/>
-    <path d="M238 102 C261 101 280 113 291 132 C273 141 251 144 229 137"/>
-    <path d="M226 138 L272 181 L233 226 L199 276 L150 354 L101 276 L67 226 L28 181 L69 137 L103 95 L128 58 L150 24"/>
-  </g>
-  <path d="M92 161
-           C108 146 129 140 150 140
-           C171 140 192 146 208 161
-           C216 169 219 181 216 192
-           C212 206 199 214 183 215
-           C170 216 161 211 150 211
-           C139 211 130 216 117 215
-           C101 214 88 206 84 192
-           C81 181 84 169 92 161 Z"
+          <svg viewBox="0 0 402 521" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision">
+  <path d="M 198 0 L 152 76 L 103 145 L 60 197 L 0 260 L 62 325 L 106 379 L 152 444 L 198 520 L 248 437 L 291 377 L 339 319 L 396 260 L 360 224 L 341 202 L 372 194 L 401 180 L 383 153 L 372 142 L 357 132 L 337 124 L 343 103 L 345 41 L 296 85 L 278 96 L 262 103 L 232 58 Z
+           M 198 41 L 224 84 L 258 133 L 276 119 L 305 104 L 322 90 L 322 102 L 316 123 L 303 146 L 309 144 L 329 144 L 340 147 L 355 155 L 370 171 L 361 176 L 340 181 L 311 180 L 288 172 L 322 213 L 366 260 L 320 309 L 274 365 L 235 419 L 200 476 L 197 478 L 169 432 L 123 367 L 79 313 L 29 260 L 78 208 L 119 158 L 161 100 Z"
+        fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/>
+  <path d="M 101 246
+           C 108 226, 130 209, 157 202
+           C 177 197, 219 197, 239 202
+           C 267 209, 288 226, 296 246
+           C 300 257, 300 271, 296 282
+           C 291 296, 278 306, 262 310
+           C 247 314, 233 311, 219 307
+           C 205 303, 191 302, 178 304
+           C 166 305, 153 310, 140 311
+           C 122 312, 107 306, 98 295
+           C 88 283, 86 266, 91 253
+           C 93 250, 96 248, 101 246 Z"
         fill="currentColor"/>
-  <path d="M101 180 C105 169 114 165 123 168 C129 170 133 174 135 180 Z" fill="#050607"/>
-  <path d="M165 180 C167 174 171 170 177 168 C186 165 195 169 199 180 Z" fill="#050607"/>
+  <path d="M 116 258 C 120 246, 130 238, 142 238 C 154 238, 163 246, 166 258 Z" fill="#050607"/>
+  <path d="M 230 258 C 233 246, 242 238, 254 238 C 266 238, 276 246, 280 258 Z" fill="#050607"/>
 </svg>
         </div>
       </div>
@@ -718,10 +776,12 @@
         if (saved && saved.id === "you") return {
           id: "you",
           name: String(saved.name || "You"),
-          avatar: String(saved.avatar || "")
+          avatar: String(saved.avatar || ""),
+          followedPlayerIds: Array.isArray(saved.followedPlayerIds) ? saved.followedPlayerIds.filter(Boolean) : [],
+          playerLastSeen: saved.playerLastSeen && typeof saved.playerLastSeen === "object" ? saved.playerLastSeen : {}
         };
       } catch (e) {}
-      return { id: "you", name: "You", avatar: "" };
+      return { id: "you", name: "You", avatar: "", followedPlayerIds: [], playerLastSeen: {} };
     }
 
     let currentUser = loadCurrentUser();
@@ -943,6 +1003,83 @@
     function siteById(id) { return db.sites.find(function(s) { return s.id === id; }); }
     function playerById(id) { return db.players.find(function(p) { return p.id === id; }); }
 
+    function isFollowingPlayer(playerId) {
+      return (currentUser.followedPlayerIds || []).includes(playerId);
+    }
+
+    function latestPlayerHistoryTime(player) {
+      return (player.history || []).reduce(function(max, item) {
+        const t = Number(item.timestamp || 0);
+        return t > max ? t : max;
+      }, 0);
+    }
+
+    function unreadPlayerUpdates(player) {
+      if (!player || !isFollowingPlayer(player.id)) return 0;
+      const lastSeen = Number((currentUser.playerLastSeen || {})[player.id] || 0);
+      return (player.history || []).filter(function(item) {
+        return Number(item.timestamp || 0) > lastSeen;
+      }).length;
+    }
+
+    function markPlayerUpdatesSeen(player) {
+      if (!player) return;
+      currentUser.playerLastSeen = currentUser.playerLastSeen || {};
+      currentUser.playerLastSeen[player.id] = Math.max(Date.now(), latestPlayerHistoryTime(player));
+      saveCurrentUser();
+      document.querySelectorAll('[data-update-player="' + player.id + '"]').forEach(function(el) { el.remove(); });
+    }
+
+    function toggleFollowPlayer(player) {
+      if (!player) return false;
+      currentUser.followedPlayerIds = currentUser.followedPlayerIds || [];
+      currentUser.playerLastSeen = currentUser.playerLastSeen || {};
+      const following = currentUser.followedPlayerIds.includes(player.id);
+      if (following) {
+        currentUser.followedPlayerIds = currentUser.followedPlayerIds.filter(function(id) { return id !== player.id; });
+      } else {
+        currentUser.followedPlayerIds.push(player.id);
+        currentUser.playerLastSeen[player.id] = Math.max(Date.now(), latestPlayerHistoryTime(player));
+      }
+      saveCurrentUser();
+      return !following;
+    }
+
+    function openPlayerUpdates(player) {
+      if (!player) return;
+      const lastSeen = Number((currentUser.playerLastSeen || {})[player.id] || 0);
+      const history = (player.history || []).slice().sort(function(a,b) {
+        return Number(b.timestamp || 0) - Number(a.timestamp || 0);
+      });
+      const unreadIds = new Set(history.filter(function(item) {
+        return Number(item.timestamp || 0) > lastSeen;
+      }).map(function(item) { return item.id; }));
+
+      const rows = history.length ? history.slice(0, 40).map(function(item) {
+        const author = resolveAuthor(item.author);
+        const isNew = unreadIds.has(item.id);
+        return '<div class="notification-row' + (isNew ? ' new' : '') + '">' +
+          avatarHtml(author, "user-avatar") +
+          '<div><div class="audit-title">' + esc(author.name || "Unknown") + ' · ' + esc(item.action || "Updated player") +
+          (isNew ? '<span class="notification-new">New</span>' : '') + '</div>' +
+          (item.detail ? '<div class="audit-meta">' + esc(item.detail) + '</div>' : '') +
+          '<div class="audit-meta">' + esc(formatHistoryTime(item.timestamp)) + '</div></div>' +
+        '</div>';
+      }).join("") : '<div class="empty">No updates recorded yet.</div>';
+
+      markPlayerUpdatesSeen(player);
+      openModal(
+        '<div class="modal-head"><div><div class="eyebrow">' + esc(player.name) + '</div><h3>Updates</h3></div><button class="modal-close" data-close>×</button></div>' +
+        '<div class="audit-list">' + rows + '</div>' +
+        '<div class="form-actions"><button class="primary" id="updatesGoPlayer" type="button">View player profile</button></div>'
+      );
+      document.getElementById("updatesGoPlayer").onclick = function() {
+        closeModal();
+        route = { screen: "profile", siteId: player.siteId, playerId: player.id };
+        render();
+      };
+    }
+
     function linkedPlayers(player) {
       return (player && Array.isArray(player.linkedPlayerIds) ? player.linkedPlayerIds : [])
         .map(playerById)
@@ -1071,7 +1208,7 @@
     }
 
     function header() {
-      const brandLogo = '<svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision"><g fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"><path d="M150 24 L193 92 L219 80 L247 56 L245 101"/><path d="M238 102 C261 101 280 113 291 132 C273 141 251 144 229 137"/><path d="M226 138 L272 181 L233 226 L199 276 L150 354 L101 276 L67 226 L28 181 L69 137 L103 95 L128 58 L150 24"/></g><path d="M92 161C108 146 129 140 150 140C171 140 192 146 208 161C216 169 219 181 216 192C212 206 199 214 183 215C170 216 161 211 150 211C139 211 130 216 117 215C101 214 88 206 84 192C81 181 84 169 92 161 Z"fill="currentColor"/><path d="M101 180 C105 169 114 165 123 168 C129 170 133 174 135 180 Z" fill="#050607"/><path d="M165 180 C167 174 171 170 177 168 C186 165 195 169 199 180 Z" fill="#050607"/></svg>';
+      const brandLogo = '<svg viewBox="0 0 402 521" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision"><path d="M 198 0 L 152 76 L 103 145 L 60 197 L 0 260 L 62 325 L 106 379 L 152 444 L 198 520 L 248 437 L 291 377 L 339 319 L 396 260 L 360 224 L 341 202 L 372 194 L 401 180 L 383 153 L 372 142 L 357 132 L 337 124 L 343 103 L 345 41 L 296 85 L 278 96 L 262 103 L 232 58 Z M 198 41 L 224 84 L 258 133 L 276 119 L 305 104 L 322 90 L 322 102 L 316 123 L 303 146 L 309 144 L 329 144 L 340 147 L 355 155 L 370 171 L 361 176 L 340 181 L 311 180 L 288 172 L 322 213 L 366 260 L 320 309 L 274 365 L 235 419 L 200 476 L 197 478 L 169 432 L 123 367 L 79 313 L 29 260 L 78 208 L 119 158 L 161 100 Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/><path d="M 101 246 C 108 226, 130 209, 157 202 C 177 197, 219 197, 239 202 C 267 209, 288 226, 296 246 C 300 257, 300 271, 296 282 C 291 296, 278 306, 262 310 C 247 314, 233 311, 219 307 C 205 303, 191 302, 178 304 C 166 305, 153 310, 140 311 C 122 312, 107 306, 98 295 C 88 283, 86 266, 91 253 C 93 250, 96 248, 101 246 Z" fill="currentColor"/><path d="M 116 258 C 120 246, 130 238, 142 238 C 154 238, 163 246, 166 258 Z" fill="#050607"/><path d="M 230 258 C 233 246, 242 238, 254 238 C 266 238, 276 246, 280 258 Z" fill="#050607"/></svg>';
       return '<div class="topbar"><div class="brand"><div class="brand-mark">' + brandLogo + '</div><div>Player Tells<small>Private player intel</small></div></div>' +
         '<div class="topbar-actions">' +
           '<button class="top-profile-btn" id="profileBtn" aria-label="My profile">' +
@@ -1189,7 +1326,7 @@
     }
 
     function filterLabel() {
-      return { all: "All", aliases: "Has aliases", comments: "Has comments", surveys: "Has reads" }[directoryState.filter] || "All";
+      return { all: "All", favourites: "Favourites", updated: "Updated", aliases: "Has aliases", comments: "Has comments", surveys: "Has reads" }[directoryState.filter] || "All";
     }
 
     function drawPlayerList(query) {
@@ -1207,6 +1344,8 @@
       });
 
       players = players.filter(function(p) {
+        if (directoryState.filter === "favourites") return isFollowingPlayer(p.id);
+        if (directoryState.filter === "updated") return unreadPlayerUpdates(p) > 0;
         if (directoryState.filter === "aliases") return (p.aliases || []).length > 0 || linkedPlayers(p).length > 0;
         if (directoryState.filter === "comments") return (p.comments || []).length > 0;
         if (directoryState.filter === "surveys") return (p.surveys || []).length > 0;
@@ -1241,20 +1380,49 @@
           (p.surveys || []).length + " reads",
           (p.comments || []).length + " comments"
         ].concat(p.tags || []);
-        return '<button class="player-row" data-player="' + esc(p.id) + '">' +
+        const following = isFollowingPlayer(p.id);
+        const unread = unreadPlayerUpdates(p);
+        return '<div class="player-row" data-player="' + esc(p.id) + '" role="button" tabindex="0">' +
           avatarHtml({ name: p.name, avatar: p.avatar }, "avatar") +
           '<div class="player-main"><div class="player-name">' + esc(p.name) + '</div>' +
           '<div class="player-sub">' + esc(aliasText) + '</div>' +
           '<div class="player-stats">' + stats.map(function(x, i) { return '<span' + (i ? ' class="stat-dot"' : '') + '>' + esc(x) + '</span>'; }).join("") + '</div></div>' +
-          '<div class="chev">›</div>' +
-        '</button>';
+          '<div class="player-row-actions">' +
+            '<button type="button" class="follow-icon-btn' + (following ? ' active' : '') + '" data-follow-player="' + esc(p.id) + '" aria-label="' + (following ? 'Unfollow player' : 'Follow player') + '">' + (following ? '★' : '☆') + '</button>' +
+            (unread ? '<button type="button" class="update-badge" data-update-player="' + esc(p.id) + '">' + unread + '</button>' : '') +
+            '<div class="chev">›</div>' +
+          '</div>' +
+        '</div>';
       }).join("");
 
-      document.querySelectorAll("[data-player]").forEach(function(btn) {
-        btn.addEventListener("click", function() {
-          route = { screen: "profile", siteId: route.siteId, playerId: btn.dataset.player };
+      document.querySelectorAll("[data-player]").forEach(function(row) {
+        row.addEventListener("click", function(e) {
+          if (e.target.closest("[data-follow-player], [data-update-player]")) return;
+          const player = playerById(row.dataset.player);
+          if (!player) return;
+          route = { screen: "profile", siteId: player.siteId, playerId: player.id };
           render();
         });
+      });
+      document.querySelectorAll("[data-follow-player]").forEach(function(btn) {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          const player = playerById(btn.dataset.followPlayer);
+          const nowFollowing = toggleFollowPlayer(player);
+          btn.classList.toggle("active", nowFollowing);
+          btn.textContent = nowFollowing ? "★" : "☆";
+          btn.setAttribute("aria-label", nowFollowing ? "Unfollow player" : "Follow player");
+          if (!nowFollowing) {
+            const badge = btn.parentElement && btn.parentElement.querySelector("[data-update-player]");
+            if (badge) badge.remove();
+          }
+        };
+      });
+      document.querySelectorAll("[data-update-player]").forEach(function(btn) {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          openPlayerUpdates(playerById(btn.dataset.updatePlayer));
+        };
       });
     }
 
@@ -1284,6 +1452,8 @@
     function openFilter() {
       const options = [
         ["all","All players"],
+        ["favourites","Favourites"],
+        ["updated","New updates"],
         ["aliases","Has aliases"],
         ["comments","Has comments"],
         ["surveys","Has survey data"]
@@ -1525,6 +1695,7 @@
     function renderMyProfile() {
       const votes = myVoteHistory();
       const comments = myCommentHistory();
+      const followed = (currentUser.followedPlayerIds || []).map(playerById).filter(Boolean);
 
       const voteHtml = votes.length ? votes.map(function(item) {
         const site = siteById(item.player.siteId);
@@ -1550,17 +1721,32 @@
         '</div>';
       }).join("") : '<div class="empty">You haven’t written any comments yet.</div>';
 
+      const followedHtml = followed.length ? followed.map(function(player) {
+        const site = siteById(player.siteId);
+        const unread = unreadPlayerUpdates(player);
+        return '<div class="followed-card" data-followed-open="' + esc(player.id) + '">' +
+          avatarHtml({name:player.name, avatar:player.avatar}, "avatar") +
+          '<div><div class="history-player">' + esc(player.name) + '</div><div class="history-site">' + esc(site ? site.name : "Unknown site") + '</div></div>' +
+          '<div class="followed-actions">' +
+            (unread ? '<button type="button" class="update-badge" data-update-player="' + esc(player.id) + '">' + unread + '</button>' : '') +
+            '<button type="button" class="follow-icon-btn active" data-unfollow-profile="' + esc(player.id) + '" aria-label="Unfollow player">★</button>' +
+          '</div>' +
+        '</div>';
+      }).join("") : '<div class="empty">No favourite players yet. Tap ☆ on a player to follow their updates.</div>';
+
       document.getElementById("app").innerHTML =
-        '<div class="shell">' +
+        '<div class="shell my-profile-shell">' +
           header() +
           '<button class="back" id="profileBack">← Home</button>' +
           '<section class="my-profile-card">' +
             avatarHtml(currentUser, "avatar my-profile-avatar") +
             '<div class="my-profile-info"><div class="eyebrow">My profile</div><div class="my-profile-name">' + esc(currentUser.name) + '</div>' +
             '<div class="profile-stats-grid"><div class="profile-stat"><strong>' + votes.length + '</strong><span>Votes</span></div>' +
-            '<div class="profile-stat"><strong>' + comments.length + '</strong><span>Comments</span></div></div></div>' +
-            '<button class="primary" id="editMyProfile">Edit profile</button>' +
+            '<div class="profile-stat"><strong>' + comments.length + '</strong><span>Comments</span></div>' +
+            '<div class="profile-stat"><strong>' + followed.length + '</strong><span>Following</span></div></div></div>' +
+            '<button class="primary my-profile-edit" id="editMyProfile">Edit profile</button>' +
           '</section>' +
+          '<section class="history-section"><div class="section-title"><h3>Following</h3><span class="tiny">' + followed.length + '</span></div><div class="followed-list">' + followedHtml + '</div></section>' +
           '<section class="history-section"><div class="section-title"><h3>My votes</h3><span class="tiny">' + votes.length + '</span></div><div class="history-list">' + voteHtml + '</div></section>' +
           '<section class="history-section"><div class="section-title"><h3>My comments</h3><span class="tiny">' + comments.length + '</span></div><div class="history-list">' + commentHtml + '</div></section>' +
         '</div>';
@@ -1569,12 +1755,29 @@
       document.getElementById("profileBack").onclick = goSites;
       document.getElementById("editMyProfile").onclick = openEditMyProfile;
 
-      document.querySelectorAll("[data-history-player]").forEach(function(btn) {
-        btn.onclick = function() {
-          const player = playerById(btn.dataset.historyPlayer);
+      document.querySelectorAll("[data-history-player], [data-followed-open]").forEach(function(btn) {
+        btn.onclick = function(e) {
+          if (e.target.closest("[data-update-player], [data-unfollow-profile]")) return;
+          const id = btn.dataset.historyPlayer || btn.dataset.followedOpen;
+          const player = playerById(id);
           if (!player) return;
           route = { screen: "profile", siteId: player.siteId, playerId: player.id };
           render();
+        };
+      });
+      document.querySelectorAll("[data-unfollow-profile]").forEach(function(btn) {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          const player = playerById(btn.dataset.unfollowProfile);
+          toggleFollowPlayer(player);
+          renderMyProfile();
+          toast("Unfollowed player");
+        };
+      });
+      document.querySelectorAll("[data-update-player]").forEach(function(btn) {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          openPlayerUpdates(playerById(btn.dataset.updatePlayer));
         };
       });
 
@@ -2157,7 +2360,10 @@
             '<div class="aliases">' + aliasHtml + '</div>' +
             (linkedProfileHtml ? '<div class="linked-profile-row"><span class="linked-profile-label">Linked profiles</span>' + linkedProfileHtml + '</div>' : '') +
             '<div class="profile-meta">' + profileMeta.map(function(x) { return '<span class="meta-chip">' + esc(x) + '</span>'; }).join("") + '</div></div>' +
-            '<button class="primary survey-cta" id="addSurvey">+ Add survey</button>' +
+            '<div class="profile-actions-stack"><div class="profile-action-top">' +
+              '<button type="button" class="profile-follow-btn' + (isFollowingPlayer(player.id) ? ' active' : '') + '" id="followPlayerBtn">' + (isFollowingPlayer(player.id) ? '★ Following' : '☆ Follow') + '</button>' +
+              (unreadPlayerUpdates(player) ? '<button type="button" class="update-badge" data-update-player="' + esc(player.id) + '">' + unreadPlayerUpdates(player) + '</button>' : '') +
+            '</div><button class="primary survey-cta" id="addSurvey">+ Add survey</button></div>' +
           '</section>' +
           '<section class="player-summary">' +
             '<div class="player-summary-head"><strong>Summary</strong><button class="summary-edit" id="editSummaryBtn" type="button">Edit</button></div>' +
@@ -2178,6 +2384,17 @@
         render();
       };
       document.getElementById("addSurvey").onclick = function() { openSurvey(player); };
+      document.getElementById("followPlayerBtn").onclick = function() {
+        const following = toggleFollowPlayer(player);
+        renderProfile();
+        toast(following ? "Following player" : "Unfollowed player");
+      };
+      document.querySelectorAll("[data-update-player]").forEach(function(btn) {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          openPlayerUpdates(player);
+        };
+      });
       document.getElementById("editSummaryBtn").onclick = function() { openEditPlayerSummary(player); };
       document.getElementById("playerHistoryBtn").onclick = function() { openPlayerHistory(player); };
       document.querySelectorAll("[data-linked-player]").forEach(function(btn) {
