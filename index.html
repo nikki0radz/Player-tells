@@ -81,6 +81,7 @@
     }
     .loader-logo svg {
       width: 100%; height: 100%; display: block; overflow: visible;
+      shape-rendering: geometricPrecision;
     }
     .loader-line { width: 190px; height: 3px; border-radius: 999px; overflow: hidden; background: #20252a; }
     .loader-line::after {
@@ -440,8 +441,31 @@
     <div class="loader-wrap">
       <div class="logo-pulse-shell">
         <div class="loader-logo" aria-label="Player Tells">
-          <svg viewBox="0 0 402 521" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
-            <path d="M 198 0 L 152 76 L 103 145 L 60 197 L 0 260 L 62 325 L 106 379 L 152 444 L 198 520 L 248 437 L 291 377 L 339 319 L 396 260 L 360 224 L 341 202 L 372 194 L 401 180 L 383 153 L 372 142 L 357 132 L 337 124 L 343 103 L 345 41 L 296 85 L 278 96 L 262 103 L 232 58 Z M 198 41 L 224 84 L 258 133 L 276 119 L 305 104 L 322 90 L 322 102 L 316 123 L 303 146 L 309 144 L 329 144 L 340 147 L 355 155 L 370 171 L 361 176 L 340 181 L 311 180 L 288 172 L 322 213 L 366 260 L 320 309 L 274 365 L 235 419 L 200 476 L 197 478 L 169 432 L 123 367 L 79 313 L 29 260 L 78 208 L 119 158 L 161 100 Z M 91 250 L 91 269 L 97 283 L 103 291 L 116 301 L 137 307 L 161 306 L 171 302 L 183 300 L 210 300 L 239 307 L 263 306 L 275 302 L 287 294 L 299 278 L 303 266 L 301 246 L 292 230 L 279 217 L 261 207 L 231 199 L 209 197 L 163 199 L 132 207 L 117 215 L 107 223 L 96 238 Z M 227 255 L 231 246 L 237 240 L 246 236 L 258 236 L 265 239 L 271 244 L 276 252 L 274 257 L 233 257 Z M 115 256 L 119 246 L 126 239 L 134 235 L 147 235 L 152 237 L 161 245 L 165 253 L 164 258 L 117 258 Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/>
+          <svg viewBox="0 0 402 521" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" shape-rendering="geometricPrecision">
+            <path d="M 198 0 L 152 76 L 103 145 L 60 197 L 0 260 L 62 325 L 106 379 L 152 444 L 198 520 L 248 437 L 291 377 L 339 319 L 396 260 L 360 224 L 341 202 L 372 194 L 401 180 L 383 153 L 372 142 L 357 132 L 337 124 L 343 103 L 345 41 L 296 85 L 278 96 L 262 103 L 232 58 Z
+                     M 198 41 L 224 84 L 258 133 L 276 119 L 305 104 L 322 90 L 322 102 L 316 123 L 303 146 L 309 144 L 329 144 L 340 147 L 355 155 L 370 171 L 361 176 L 340 181 L 311 180 L 288 172 L 322 213 L 366 260 L 320 309 L 274 365 L 235 419 L 200 476 L 197 478 L 169 432 L 123 367 L 79 313 L 29 260 L 78 208 L 119 158 L 161 100 Z"
+                  fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/>
+            <path d="M 101 246
+                     C 108 226, 130 209, 157 202
+                     C 177 197, 219 197, 239 202
+                     C 267 209, 288 226, 296 246
+                     C 300 257, 300 271, 296 282
+                     C 291 296, 278 306, 262 310
+                     C 247 314, 233 311, 219 307
+                     C 205 303, 191 302, 178 304
+                     C 166 305, 153 310, 140 311
+                     C 122 312, 107 306, 98 295
+                     C 88 283, 86 266, 91 253
+                     C 93 250, 96 248, 101 246 Z"
+                  fill="currentColor"/>
+            <path d="M 116 258
+                     C 120 246, 130 238, 142 238
+                     C 154 238, 163 246, 166 258 Z"
+                  fill="#050607"/>
+            <path d="M 230 258
+                     C 233 246, 242 238, 254 238
+                     C 266 238, 276 246, 280 258 Z"
+                  fill="#050607"/>
           </svg>
         </div>
       </div>
