@@ -263,6 +263,28 @@
       font-weight: 900; color: var(--muted);
     }
     .image-editor-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+    .duplicate-check { margin-top: -5px; margin-bottom: 14px; }
+    .duplicate-status {
+      min-height: 16px; color: var(--muted); font-size: 10px; margin: 5px 2px 7px;
+    }
+    .duplicate-status.blocked { color: #ff8585; }
+    .possible-matches { display: grid; gap: 6px; }
+    .possible-match {
+      width: 100%; display: grid; grid-template-columns: 34px 1fr auto; gap: 9px; align-items: center;
+      border: 1px solid var(--line); background: var(--field); color: var(--text);
+      border-radius: 12px; padding: 8px 10px; cursor: pointer; text-align: left;
+    }
+    .possible-match:hover { border-color: rgba(var(--accent-rgb),.42); }
+    .possible-match .avatar { width: 34px; height: 34px; font-size: 9px; }
+    .possible-match-name { font-size: 11px; font-weight: 850; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .possible-match-meta { color: var(--muted); font-size: 9px; margin-top: 2px; }
+    .match-exact { color: #ff8585; font-size: 9px; font-weight: 800; }
+    .match-similar { color: var(--muted); font-size: 9px; }
+    .survey-existing-note {
+      border: 1px solid rgba(var(--accent-rgb),.24); background: rgba(var(--accent-rgb),.06);
+      border-radius: 14px; padding: 13px; color: var(--text); font-size: 12px; line-height: 1.5;
+    }
     .image-actions { display: grid; gap: 7px; }
     .upload-label {
       display: inline-flex; align-items: center; justify-content: center; width: fit-content;
@@ -776,6 +798,12 @@
           if (!s.author) s.author = demoVoters[(index + i) % demoVoters.length];
           return s;
         });
+        const myVotes = p.surveys.filter(function(s) { return s.author && s.author.id === "you"; });
+        if (myVotes.length > 1) {
+          const latestMine = myVotes[myVotes.length - 1];
+          p.surveys = p.surveys.filter(function(s) { return !(s.author && s.author.id === "you"); });
+          p.surveys.push(latestMine);
+        }
         if (legacySingle) {
           const base = p.surveys[0];
           p.surveys.push({
@@ -1767,25 +1795,117 @@
       };
     }
 
+    function playerMatchesQuery(player, query) {
+      const q = normalizeSearch(query);
+      if (!q) return false;
+      return [player.name].concat(player.aliases || []).some(function(value) {
+        return normalizeSearch(value).includes(q);
+      });
+    }
+
+    function isExactPlayerDuplicate(player, name, siteId) {
+      if (player.siteId !== siteId) return false;
+      const needle = normalizeSearch(name);
+      if (!needle) return false;
+      return [player.name].concat(player.aliases || []).some(function(value) {
+        return normalizeSearch(value) === needle;
+      });
+    }
+
     function openAddPlayer() {
       const site = siteById(route.siteId);
       let newPlayerAvatar = "";
       openModal(
         '<div class="modal-head"><div><div class="eyebrow">' + esc(site.name) + '</div><h3>Add player</h3></div><button class="modal-close" data-close>×</button></div>' +
         '<form id="addPlayerForm">' +
-          '<div class="field"><label>Username</label><input name="name" required placeholder="e.g. Big_Toe77"></div>' +
+          '<div class="field"><label>Username</label><input id="addPlayerName" name="name" required placeholder="Start typing their username…" autocomplete="off"></div>' +
+          '<div class="duplicate-check"><div class="duplicate-status" id="duplicateStatus">We’ll check the database as you type.</div><div class="possible-matches" id="possibleMatches"></div></div>' +
           '<div class="field"><label>Aliases <span class="tiny">(optional, comma separated)</span></label><input name="aliases" placeholder="Other usernames, nicknames…"></div>' +
           imageEditorMarkup("New player", "") +
-          '<div class="form-actions"><button class="ghost" type="button" data-close>Cancel</button><button class="primary" type="submit">Add player</button></div>' +
+          '<div class="form-actions"><button class="ghost" type="button" data-close>Cancel</button><button class="primary" id="addPlayerSubmit" type="submit">Add player</button></div>' +
         '</form>'
       );
 
       bindImageEditor("", function(v) { newPlayerAvatar = v; });
+
+      const nameInput = document.getElementById("addPlayerName");
+      const matchesWrap = document.getElementById("possibleMatches");
+      const status = document.getElementById("duplicateStatus");
+      const submit = document.getElementById("addPlayerSubmit");
+
+      function drawPossibleMatches() {
+        const raw = nameInput.value.trim();
+        const q = normalizeSearch(raw);
+        matchesWrap.innerHTML = "";
+        status.classList.remove("blocked");
+        submit.disabled = false;
+        submit.style.opacity = "1";
+
+        if (q.length < 2) {
+          status.textContent = "We’ll check the database as you type.";
+          return;
+        }
+
+        const matches = db.players
+          .filter(function(p) { return playerMatchesQuery(p, raw); })
+          .sort(function(a, b) {
+            const aExact = isExactPlayerDuplicate(a, raw, route.siteId) ? 0 : (a.siteId === route.siteId ? 1 : 2);
+            const bExact = isExactPlayerDuplicate(b, raw, route.siteId) ? 0 : (b.siteId === route.siteId ? 1 : 2);
+            return aExact - bExact || a.name.localeCompare(b.name);
+          })
+          .slice(0, 6);
+
+        const exact = matches.find(function(p) { return isExactPlayerDuplicate(p, raw, route.siteId); });
+        if (exact) {
+          status.textContent = "This player already exists on " + site.name + ".";
+          status.classList.add("blocked");
+          submit.disabled = true;
+          submit.style.opacity = ".45";
+        } else if (matches.length) {
+          status.textContent = "Possible matches already in the database:";
+        } else {
+          status.textContent = "No matching player found.";
+        }
+
+        matchesWrap.innerHTML = matches.map(function(p) {
+          const matchSite = siteById(p.siteId);
+          const exactHere = isExactPlayerDuplicate(p, raw, route.siteId);
+          return '<button type="button" class="possible-match" data-existing-player="' + esc(p.id) + '">' +
+            avatarHtml({ name: p.name, avatar: p.avatar }, "avatar") +
+            '<div><div class="possible-match-name">' + esc(p.name) + '</div>' +
+            '<div class="possible-match-meta">' + esc(matchSite ? matchSite.name : "Unknown site") +
+              ((p.aliases || []).length ? ' · ' + esc((p.aliases || []).join(" · ")) : '') + '</div></div>' +
+            '<span class="' + (exactHere ? 'match-exact' : 'match-similar') + '">' + (exactHere ? 'Already exists' : 'View') + '</span>' +
+          '</button>';
+        }).join("");
+
+        document.querySelectorAll("[data-existing-player]").forEach(function(btn) {
+          btn.onclick = function() {
+            const existing = playerById(btn.dataset.existingPlayer);
+            if (!existing) return;
+            closeModal();
+            route = { screen: "profile", siteId: existing.siteId, playerId: existing.id };
+            render();
+          };
+        });
+      }
+
+      nameInput.addEventListener("input", drawPossibleMatches);
+
       document.getElementById("addPlayerForm").addEventListener("submit", function(e) {
         e.preventDefault();
         const form = new FormData(e.target);
         const name = String(form.get("name") || "").trim();
         if (!name) return;
+
+        const exact = db.players.find(function(p) { return isExactPlayerDuplicate(p, name, route.siteId); });
+        if (exact) {
+          status.textContent = "This player already exists on " + site.name + ".";
+          status.classList.add("blocked");
+          submit.disabled = true;
+          submit.style.opacity = ".45";
+          return;
+        }
 
         db.players.push({
           id: route.siteId + "-" + Date.now(),
@@ -1928,21 +2048,44 @@
       );
     }
 
-    function openSurvey(player) {
+    function mySurveyForPlayer(player) {
+      return (player.surveys || []).find(function(survey) {
+        return survey.author && survey.author.id === currentUser.id;
+      }) || null;
+    }
+
+    function openSurvey(player, editingExisting) {
+      const existing = mySurveyForPlayer(player);
+
+      if (existing && !editingExisting) {
+        openModal(
+          '<div class="modal-head"><div><div class="eyebrow">' + esc(player.name) + '</div><h3>You’ve already voted</h3></div><button class="modal-close" data-close>×</button></div>' +
+          '<div class="survey-existing-note">You’ve already submitted your survey for this player. You can edit your existing entry if your read has changed.</div>' +
+          '<div class="form-actions"><button class="ghost" type="button" data-close>Keep current vote</button><button class="primary" id="editExistingSurvey" type="button">Edit my entry</button></div>'
+        );
+        document.getElementById("editExistingSurvey").onclick = function() {
+          closeModal();
+          openSurvey(player, true);
+        };
+        return;
+      }
+
+      const values = existing || { ie: 5, sn: 5, tf: 5, jp: 5 };
       const rows = traits.map(function(t) {
+        const value = Number(values[t.key]) || 5;
         return '<div class="survey-row">' +
           '<div class="survey-side-labels"><span>' + esc(t.left) + '</span><span>' + esc(t.right) + '</span></div>' +
-          '<div class="range-wrap"><input type="range" name="' + t.key + '" min="1" max="10" value="5" step="1">' +
+          '<div class="range-wrap"><input type="range" name="' + t.key + '" min="1" max="10" value="' + value + '" step="1">' +
           '<div class="tick-row">' + new Array(10).fill('<span></span>').join("") + '</div></div>' +
-          '<div class="survey-value" id="value-' + t.key + '">5 / 10</div>' +
+          '<div class="survey-value" id="value-' + t.key + '">' + value + ' / 10</div>' +
         '</div>';
       }).join("");
 
       openModal(
-        '<div class="modal-head"><div><div class="eyebrow">' + esc(player.name) + '</div><h3>Add your read</h3></div><button class="modal-close" data-close>×</button></div>' +
-        '<div class="tiny">Each slider snaps to one of ten positions. Your vote stays visible in the trait breakdown.</div>' +
+        '<div class="modal-head"><div><div class="eyebrow">' + esc(player.name) + '</div><h3>' + (existing ? 'Edit your read' : 'Add your read') + '</h3></div><button class="modal-close" data-close>×</button></div>' +
+        '<div class="tiny">Each user has one survey per player. You can come back and update yours whenever your read changes.</div>' +
         '<form id="surveyForm"><div class="survey-block">' + rows + '</div>' +
-        '<div class="form-actions"><button class="ghost" type="button" data-close>Cancel</button><button class="primary" type="submit">Save survey</button></div></form>'
+        '<div class="form-actions"><button class="ghost" type="button" data-close>Cancel</button><button class="primary" type="submit">' + (existing ? 'Update survey' : 'Save survey') + '</button></div></form>'
       );
 
       document.querySelectorAll('#surveyForm input[type="range"]').forEach(function(input) {
@@ -1954,14 +2097,25 @@
       document.getElementById("surveyForm").addEventListener("submit", function(e) {
         e.preventDefault();
         const form = new FormData(e.target);
-        const survey = { author: { id: currentUser.id, name: currentUser.name, avatar: currentUser.avatar } };
-        traits.forEach(function(t) { survey[t.key] = Number(form.get(t.key)); });
         player.surveys = player.surveys || [];
-        player.surveys.push(survey);
+
+        if (existing) {
+          traits.forEach(function(t) { existing[t.key] = Number(form.get(t.key)); });
+          existing.author = { id: currentUser.id, name: currentUser.name, avatar: currentUser.avatar };
+          existing.updatedAt = Date.now();
+        } else {
+          const survey = {
+            author: { id: currentUser.id, name: currentUser.name, avatar: currentUser.avatar },
+            createdAt: Date.now()
+          };
+          traits.forEach(function(t) { survey[t.key] = Number(form.get(t.key)); });
+          player.surveys.push(survey);
+        }
+
         saveState();
         closeModal();
         renderProfile();
-        toast("Survey added");
+        toast(existing ? "Survey updated" : "Survey added");
       });
     }
 
