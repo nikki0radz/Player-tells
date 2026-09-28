@@ -174,8 +174,8 @@
     }
     .brand { display: flex; gap: 11px; align-items: center; font-weight: 900; letter-spacing: -.03em; }
     .brand-mark {
-      width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--line); display: grid; place-items: center;
-      background: var(--button); overflow: hidden; color: var(--text);
+      width: 38px; height: 38px; border-radius: 12px; border: 1px solid #22282d; display: grid; place-items: center;
+      background: #050607; overflow: hidden; color: #ffffff;
     }
     .brand-mark svg {
       width: 25px; height: 31px; display: block; shape-rendering: geometricPrecision;
@@ -304,6 +304,47 @@
     .possible-match-meta { color: var(--muted); font-size: 9px; margin-top: 2px; }
     .match-exact { color: #ff8585; font-size: 9px; font-weight: 800; }
     .match-similar { color: var(--muted); font-size: 9px; }
+
+    .link-editor {
+      margin: 2px 0 16px; padding: 12px; border: 1px solid var(--line);
+      background: var(--field); border-radius: 14px;
+    }
+    .link-editor-head { margin-bottom: 9px; }
+    .link-editor-head strong { display: block; font-size: 11px; }
+    .link-editor-head small { display: block; color: var(--muted); font-size: 9px; margin-top: 3px; line-height: 1.45; }
+    .link-search {
+      width: 100%; border: 1px solid var(--line); background: var(--panel); color: var(--text);
+      border-radius: 11px; padding: 9px 10px; outline: 0; font-size: 11px;
+    }
+    .link-search:focus { border-color: rgba(var(--accent-rgb),.5); }
+    .linked-selection { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+    .linked-pill {
+      display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(var(--accent-rgb),.25);
+      background: rgba(var(--accent-rgb),.06); border-radius: 999px; padding: 5px 7px 5px 9px;
+      font-size: 9px; color: var(--text);
+    }
+    .linked-pill button {
+      border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 0 2px;
+      font-size: 13px; line-height: 1;
+    }
+    .link-results { display: grid; gap: 6px; margin-top: 8px; }
+    .link-result {
+      width: 100%; display: grid; grid-template-columns: 34px 1fr auto; gap: 9px; align-items: center;
+      border: 1px solid var(--line); background: var(--panel); color: var(--text);
+      border-radius: 11px; padding: 7px 9px; cursor: pointer; text-align: left;
+    }
+    .link-result:hover { border-color: rgba(var(--accent-rgb),.4); }
+    .link-result .avatar { width: 34px; height: 34px; font-size: 9px; }
+    .link-result-name { font-size: 11px; font-weight: 850; }
+    .link-result-site { color: var(--muted); font-size: 9px; margin-top: 2px; }
+    .link-result-action { color: var(--accent); font-size: 9px; font-weight: 800; }
+    .linked-profile-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 9px; }
+    .linked-profile-label { color: var(--muted); font-size: 9px; margin-right: 2px; text-transform: uppercase; letter-spacing: .08em; }
+    .linked-profile-chip {
+      border: 1px solid rgba(var(--accent-rgb),.23); background: rgba(var(--accent-rgb),.055);
+      color: var(--text); cursor: pointer;
+    }
+    .linked-profile-chip:hover { border-color: rgba(var(--accent-rgb),.48); color: var(--accent); }
     .survey-existing-note {
       border: 1px solid rgba(var(--accent-rgb),.24); background: rgba(var(--accent-rgb),.06);
       border-radius: 14px; padding: 13px; color: var(--text); font-size: 12px; line-height: 1.5;
@@ -851,6 +892,7 @@
         p.avatar = p.avatar || "";
         p.description = p.description || "";
         p.history = Array.isArray(p.history) ? p.history : [];
+        p.linkedPlayerIds = Array.isArray(p.linkedPlayerIds) ? p.linkedPlayerIds.filter(Boolean) : [];
         p.surveys = p.surveys || [];
         const legacySingle = isSeedPlayer(p) && p.surveys.length === 1 && !p.surveys[0].author && !p.demoVotesExpanded;
         p.surveys = p.surveys.map(function(s, i) {
@@ -989,6 +1031,121 @@
 
     function siteById(id) { return db.sites.find(function(s) { return s.id === id; }); }
     function playerById(id) { return db.players.find(function(p) { return p.id === id; }); }
+
+    function linkedPlayers(player) {
+      return (player && Array.isArray(player.linkedPlayerIds) ? player.linkedPlayerIds : [])
+        .map(playerById)
+        .filter(Boolean);
+    }
+
+    function setPlayerLinks(player, nextIds) {
+      const oldIds = Array.from(new Set((player.linkedPlayerIds || []).filter(Boolean)));
+      const validIds = Array.from(new Set((nextIds || []).filter(function(id) {
+        return id && id !== player.id && !!playerById(id);
+      })));
+
+      const removed = oldIds.filter(function(id) { return !validIds.includes(id); });
+      const added = validIds.filter(function(id) { return !oldIds.includes(id); });
+
+      removed.forEach(function(id) {
+        const other = playerById(id);
+        if (!other) return;
+        other.linkedPlayerIds = (other.linkedPlayerIds || []).filter(function(x) { return x !== player.id; });
+        const otherSite = siteById(other.siteId);
+        const playerSite = siteById(player.siteId);
+        addPlayerHistory(player, "Unlinked player profile", other.name + (otherSite ? " · " + otherSite.name : ""));
+        addPlayerHistory(other, "Unlinked player profile", player.name + (playerSite ? " · " + playerSite.name : ""));
+      });
+
+      added.forEach(function(id) {
+        const other = playerById(id);
+        if (!other) return;
+        other.linkedPlayerIds = Array.from(new Set((other.linkedPlayerIds || []).concat(player.id)));
+        const otherSite = siteById(other.siteId);
+        const playerSite = siteById(player.siteId);
+        addPlayerHistory(player, "Linked player profile", other.name + (otherSite ? " · " + otherSite.name : ""));
+        addPlayerHistory(other, "Linked player profile", player.name + (playerSite ? " · " + playerSite.name : ""));
+      });
+
+      player.linkedPlayerIds = validIds;
+      return { added: added, removed: removed };
+    }
+
+    function playerLinkEditorMarkup() {
+      return '<div class="link-editor">' +
+        '<div class="link-editor-head"><strong>Link another player profile</strong><small>Use this when the same person has a different username on another poker site.</small></div>' +
+        '<input class="link-search" id="playerLinkSearch" type="text" placeholder="Search another site…" autocomplete="off">' +
+        '<div class="linked-selection" id="linkedPlayerSelection"></div>' +
+        '<div class="link-results" id="playerLinkResults"></div>' +
+      '</div>';
+    }
+
+    function bindPlayerLinkEditor(currentPlayerId, currentSiteId, initialIds, onChange) {
+      let selected = Array.from(new Set((initialIds || []).filter(Boolean)));
+      const search = document.getElementById("playerLinkSearch");
+      const results = document.getElementById("playerLinkResults");
+      const selection = document.getElementById("linkedPlayerSelection");
+      if (!search || !results || !selection) return;
+
+      function emit() { onChange(selected.slice()); }
+
+      function drawSelection() {
+        const chosen = selected.map(playerById).filter(Boolean);
+        selection.innerHTML = chosen.length ? chosen.map(function(p) {
+          const site = siteById(p.siteId);
+          return '<span class="linked-pill">' + esc(p.name) +
+            '<span style="color:var(--muted)">' + esc(site ? site.name : "") + '</span>' +
+            '<button type="button" data-unlink-choice="' + esc(p.id) + '" aria-label="Remove link">×</button></span>';
+        }).join("") : '<span class="tiny">No linked profiles selected.</span>';
+
+        document.querySelectorAll("[data-unlink-choice]").forEach(function(btn) {
+          btn.onclick = function() {
+            selected = selected.filter(function(id) { return id !== btn.dataset.unlinkChoice; });
+            drawSelection();
+            drawResults();
+            emit();
+          };
+        });
+      }
+
+      function drawResults() {
+        const q = normalizeSearch(search.value);
+        if (!q) {
+          results.innerHTML = "";
+          return;
+        }
+
+        const matches = db.players.filter(function(p) {
+          if (p.id === currentPlayerId || p.siteId === currentSiteId || selected.includes(p.id)) return false;
+          const haystack = [p.name].concat(p.aliases || []).map(normalizeSearch);
+          return haystack.some(function(x) { return x.includes(q); });
+        }).slice(0, 6);
+
+        results.innerHTML = matches.length ? matches.map(function(p) {
+          const site = siteById(p.siteId);
+          return '<button type="button" class="link-result" data-link-choice="' + esc(p.id) + '">' +
+            avatarHtml({ name: p.name, avatar: p.avatar }, "avatar") +
+            '<div><div class="link-result-name">' + esc(p.name) + '</div><div class="link-result-site">' +
+              esc(site ? site.name : "Unknown site") + '</div></div>' +
+            '<span class="link-result-action">Link</span></button>';
+        }).join("") : '<div class="tiny">No matching players on other sites.</div>';
+
+        document.querySelectorAll("[data-link-choice]").forEach(function(btn) {
+          btn.onclick = function() {
+            if (!selected.includes(btn.dataset.linkChoice)) selected.push(btn.dataset.linkChoice);
+            search.value = "";
+            drawSelection();
+            drawResults();
+            emit();
+          };
+        });
+      }
+
+      search.addEventListener("input", drawResults);
+      drawSelection();
+      drawResults();
+      emit();
+    }
 
     function settingsIcon() {
       return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21H9.6v-.1A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3V9.6h.1A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.1A1.7 1.7 0 0 0 15.4 4a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.12.37.34.7.64.94.3.24.67.37 1.06.37h.1v4h-.1A1.7 1.7 0 0 0 19.4 15Z"></path></svg>';
@@ -1133,12 +1290,13 @@
 
       players = players.filter(function(p) {
         if (!q) return true;
-        const haystack = [p.name].concat(p.aliases || []).map(normalizeSearch);
+        const linkedNames = linkedPlayers(p).map(function(lp) { return lp.name; });
+        const haystack = [p.name].concat(p.aliases || [], linkedNames).map(normalizeSearch);
         return haystack.some(function(part) { return part.includes(q); });
       });
 
       players = players.filter(function(p) {
-        if (directoryState.filter === "aliases") return (p.aliases || []).length > 0;
+        if (directoryState.filter === "aliases") return (p.aliases || []).length > 0 || linkedPlayers(p).length > 0;
         if (directoryState.filter === "comments") return (p.comments || []).length > 0;
         if (directoryState.filter === "surveys") return (p.surveys || []).length > 0;
         return true;
@@ -1165,7 +1323,9 @@
       }
 
       wrap.innerHTML = players.map(function(p) {
-        const aliasText = p.aliases && p.aliases.length ? p.aliases.join(" · ") : "No aliases added";
+        const linkedNames = linkedPlayers(p).map(function(lp) { return lp.name; });
+        const aliasBits = (p.aliases || []).concat(linkedNames);
+        const aliasText = aliasBits.length ? aliasBits.join(" · ") : "No aliases added";
         const stats = [
           (p.surveys || []).length + " reads",
           (p.comments || []).length + " comments"
@@ -1831,18 +1991,21 @@
     function openEditPlayer(player) {
       if (!player) return;
       let editedAvatar = player.avatar || "";
+      let linkedIds = (player.linkedPlayerIds || []).slice();
       openModal(
         '<div class="modal-head"><div><div class="eyebrow">Edit player</div><h3>' + esc(player.name) + '</h3></div><button class="modal-close" data-close>×</button></div>' +
         '<form id="editPlayerForm">' +
           imageEditorMarkup(player.name, editedAvatar) +
           '<div class="field"><label>Username</label><input name="name" required value="' + esc(player.name) + '"></div>' +
           '<div class="field"><label>Nicknames / aliases</label><input name="aliases" value="' + esc((player.aliases || []).join(", ")) + '" placeholder="Comma separated"></div>' +
+          playerLinkEditorMarkup() +
           '<div class="field"><label>Description / summary</label><textarea name="description" rows="5" placeholder="Shared notes about this player…">' + esc(player.description || "") + '</textarea></div>' +
           '<div class="form-actions"><button class="ghost" type="button" data-close>Cancel</button><button class="primary" type="submit">Save changes</button></div>' +
         '</form>'
       );
 
       bindImageEditor(editedAvatar, function(v) { editedAvatar = v; });
+      bindPlayerLinkEditor(player.id, player.siteId, linkedIds, function(ids) { linkedIds = ids; });
       document.getElementById("editPlayerForm").onsubmit = function(e) {
         e.preventDefault();
         const form = new FormData(e.target);
@@ -1850,12 +2013,14 @@
           name: player.name,
           aliases: JSON.stringify(player.aliases || []),
           avatar: player.avatar || "",
-          description: player.description || ""
+          description: player.description || "",
+          linkedPlayerIds: JSON.stringify(player.linkedPlayerIds || [])
         };
         player.name = String(form.get("name") || "").trim() || player.name;
         player.aliases = String(form.get("aliases") || "").split(",").map(function(x) { return x.trim(); }).filter(Boolean);
         player.description = String(form.get("description") || "").trim();
         player.avatar = editedAvatar;
+        setPlayerLinks(player, linkedIds);
 
         const changed = [];
         if (before.name !== player.name) changed.push("username");
@@ -1918,12 +2083,14 @@
     function openAddPlayer() {
       const site = siteById(route.siteId);
       let newPlayerAvatar = "";
+      let linkedIds = [];
       openModal(
         '<div class="modal-head"><div><div class="eyebrow">' + esc(site.name) + '</div><h3>Add player</h3></div><button class="modal-close" data-close>×</button></div>' +
         '<form id="addPlayerForm">' +
           '<div class="field"><label>Username</label><input id="addPlayerName" name="name" required placeholder="Start typing their username…" autocomplete="off"></div>' +
           '<div class="duplicate-check"><div class="duplicate-status" id="duplicateStatus">We’ll check the database as you type.</div><div class="possible-matches" id="possibleMatches"></div></div>' +
           '<div class="field"><label>Aliases <span class="tiny">(optional, comma separated)</span></label><input name="aliases" placeholder="Other usernames, nicknames…"></div>' +
+          playerLinkEditorMarkup() +
           '<div class="field"><label>Description / summary <span class="tiny">(optional)</span></label><textarea name="description" rows="4" placeholder="Shared notes about this player…"></textarea></div>' +
           imageEditorMarkup("New player", "") +
           '<div class="form-actions"><button class="ghost" type="button" data-close>Cancel</button><button class="primary" id="addPlayerSubmit" type="submit">Add player</button></div>' +
@@ -1931,6 +2098,7 @@
       );
 
       bindImageEditor("", function(v) { newPlayerAvatar = v; });
+      bindPlayerLinkEditor(null, route.siteId, linkedIds, function(ids) { linkedIds = ids; });
 
       const nameInput = document.getElementById("addPlayerName");
       const matchesWrap = document.getElementById("possibleMatches");
@@ -2021,10 +2189,12 @@
           tags: [],
           surveys: [],
           comments: [],
-          history: []
+          history: [],
+          linkedPlayerIds: []
         };
-        addPlayerHistory(newPlayer, "Added player", "Created this player profile");
         db.players.push(newPlayer);
+        addPlayerHistory(newPlayer, "Added player", "Created this player profile");
+        setPlayerLinks(newPlayer, linkedIds);
 
         saveState();
         closeModal();
@@ -2041,6 +2211,12 @@
       const aliasHtml = (player.aliases && player.aliases.length)
         ? player.aliases.map(function(a) { return '<span class="chip">' + esc(a) + '</span>'; }).join("")
         : '<span class="chip">No aliases yet</span>';
+
+      const linkedProfileHtml = linkedPlayers(player).map(function(linked) {
+        const linkedSite = siteById(linked.siteId);
+        return '<button type="button" class="chip linked-profile-chip" data-linked-player="' + esc(linked.id) + '">' +
+          esc(linked.name) + (linkedSite ? ' · ' + esc(linkedSite.name) : '') + '</button>';
+      }).join("");
 
       const profileMeta = [
         (player.surveys || []).length + " reads",
@@ -2069,6 +2245,7 @@
             avatarHtml({ name: player.name, avatar: player.avatar }, "avatar profile-avatar") +
             '<div><div class="eyebrow">' + esc(site.name) + '</div><div class="profile-title">' + esc(player.name) + '</div>' +
             '<div class="aliases">' + aliasHtml + '</div>' +
+            (linkedProfileHtml ? '<div class="linked-profile-row"><span class="linked-profile-label">Linked profiles</span>' + linkedProfileHtml + '</div>' : '') +
             '<div class="profile-meta">' + profileMeta.map(function(x) { return '<span class="meta-chip">' + esc(x) + '</span>'; }).join("") + '</div></div>' +
           '</section>' +
           '<section class="player-summary">' +
@@ -2092,6 +2269,14 @@
       document.getElementById("addSurvey").onclick = function() { openSurvey(player); };
       document.getElementById("editSummaryBtn").onclick = function() { openEditPlayerSummary(player); };
       document.getElementById("playerHistoryBtn").onclick = function() { openPlayerHistory(player); };
+      document.querySelectorAll("[data-linked-player]").forEach(function(btn) {
+        btn.onclick = function() {
+          const linked = playerById(btn.dataset.linkedPlayer);
+          if (!linked) return;
+          route = { screen: "profile", siteId: linked.siteId, playerId: linked.id };
+          render();
+        };
+      });
       document.querySelectorAll("[data-trait]").forEach(function(btn) {
         btn.onclick = function() { openVoteBreakdown(player, btn.dataset.trait); };
       });
