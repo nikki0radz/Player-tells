@@ -71,14 +71,18 @@
       display: grid; place-items: center; isolation: isolate; overflow: visible;
     }
     .logo-echo {
-      --echo-max-scale: 2.05;
+      --echo-scale: 1.6;
+      --echo-opacity: .22;
       position: absolute; width: 171px; height: 220px; display: grid; place-items: center;
-      color: rgba(255,255,255,.52); z-index: -1; pointer-events: none; opacity: 0;
+      color: rgba(255,255,255,.56); z-index: -1; pointer-events: none; opacity: 0;
       transform-origin: center center; will-change: transform, opacity, filter;
-      animation: logo-echo-wave 4.8s linear infinite;
+      animation: logo-echo-wave 1.25s cubic-bezier(.12,.72,.18,1) infinite;
     }
-    .logo-echo.echo-2 { animation-delay: 1.6s; }
-    .logo-echo.echo-3 { animation-delay: 3.2s; }
+    .logo-echo.echo-1 { --echo-scale: 1.45; --echo-opacity: .24; }
+    .logo-echo.echo-2 { --echo-scale: 1.78; --echo-opacity: .20; }
+    .logo-echo.echo-3 { --echo-scale: 2.10; --echo-opacity: .16; }
+    .logo-echo.echo-4 { --echo-scale: 2.45; --echo-opacity: .12; }
+    .logo-echo.echo-5 { --echo-scale: 2.90; --echo-opacity: .09; }
     .logo-echo svg {
       width: 100%; height: 100%; display: block; overflow: visible;
       shape-rendering: geometricPrecision;
@@ -88,16 +92,24 @@
     .logo-echo svg path {
       fill: none !important;
       stroke: currentColor !important;
-      stroke-width: 2.8 !important;
+      stroke-width: 2.7 !important;
       stroke-linecap: round !important;
       stroke-linejoin: round !important;
       vector-effect: non-scaling-stroke;
     }
     @media (min-width: 600px) {
-      .logo-echo { --echo-max-scale: 3.15; }
+      .logo-echo.echo-1 { --echo-scale: 1.55; }
+      .logo-echo.echo-2 { --echo-scale: 2.05; }
+      .logo-echo.echo-3 { --echo-scale: 2.65; }
+      .logo-echo.echo-4 { --echo-scale: 3.25; }
+      .logo-echo.echo-5 { --echo-scale: 3.85; }
     }
     @media (min-width: 900px) {
-      .logo-echo { --echo-max-scale: 4.35; }
+      .logo-echo.echo-1 { --echo-scale: 1.65; }
+      .logo-echo.echo-2 { --echo-scale: 2.30; }
+      .logo-echo.echo-3 { --echo-scale: 3.10; }
+      .logo-echo.echo-4 { --echo-scale: 3.90; }
+      .logo-echo.echo-5 { --echo-scale: 4.70; }
     }
     .loader-logo {
       width: 171px; height: 220px; display: grid; place-items: center;
@@ -125,23 +137,23 @@
     }
     @keyframes logo-echo-wave {
       0% {
-        transform: scale(.96);
-        opacity: .24;
+        transform: scale(.98);
+        opacity: var(--echo-opacity);
         filter: blur(0);
       }
-      22% {
-        opacity: .18;
+      26% {
+        opacity: calc(var(--echo-opacity) * .82);
       }
-      50% {
-        opacity: .11;
+      58% {
+        opacity: calc(var(--echo-opacity) * .48);
       }
-      76% {
-        opacity: .055;
+      82% {
+        opacity: calc(var(--echo-opacity) * .18);
       }
       100% {
-        transform: scale(var(--echo-max-scale));
+        transform: scale(var(--echo-scale));
         opacity: 0;
-        filter: blur(.55px);
+        filter: blur(.45px);
       }
     }
     @keyframes loader-progress {
@@ -642,6 +654,20 @@
   </g>
 </svg></div>
         <div class="logo-echo echo-3" aria-hidden="true"><svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision">
+  <g fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M150 24 L193 92 L219 80 L247 56 L245 101"/>
+    <path d="M238 102 C261 101 280 113 291 132 C273 141 251 144 229 137"/>
+    <path d="M226 138 L272 181 L233 226 L199 276 L150 354 L101 276 L67 226 L28 181 L69 137 L103 95 L128 58 L150 24"/>
+  </g>
+</svg></div>
+        <div class="logo-echo echo-4" aria-hidden="true"><svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision">
+  <g fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M150 24 L193 92 L219 80 L247 56 L245 101"/>
+    <path d="M238 102 C261 101 280 113 291 132 C273 141 251 144 229 137"/>
+    <path d="M226 138 L272 181 L233 226 L199 276 L150 354 L101 276 L67 226 L28 181 L69 137 L103 95 L128 58 L150 24"/>
+  </g>
+</svg></div>
+        <div class="logo-echo echo-5" aria-hidden="true"><svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision">
   <g fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
     <path d="M150 24 L193 92 L219 80 L247 56 L245 101"/>
     <path d="M238 102 C261 101 280 113 291 132 C273 141 251 144 229 137"/>
