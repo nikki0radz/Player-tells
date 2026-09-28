@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0d10" />
+  <title>Player Tells</title>
+  <style>
+    :root {
+      --bg: #080a0d;
+      --panel: #10151a;
+      --panel-2: #151b21;
+      --line: #263039;
+      --text: #f3f6f8;
+      --muted: #8d99a4;
+      --accent: #c7ff3a;
+      --accent-soft: rgba(199,255,58,.12);
+      --danger: #ff6b6b;
+      --shadow: 0 18px 50px rgba(0,0,0,.38);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    body {
+      background:
+        radial-gradient(circle at 15% 15%, rgba(199,255,58,.055), transparent 27rem),
+        radial-gradient(circle at 85% 90%, rgba(255,255,255,.035), transparent 30rem),
+        var(--bg);
+      overflow-x: hidden;
+    }
+
+    .noise {
+      position: fixed; inset: 0; pointer-events: none; opacity: .18; z-index: 0;
+      background-image: linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.012) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: linear-gradient(to bottom, black, transparent 90%);
+    }
+
+    #loading {
+      position: fixed; inset: 0; z-index: 50; display: grid; place-items: center;
+      background: #07090b;
+      transition: opacity .45s ease, visibility .45s ease;
+    }
+    #loading.hide { opacity: 0; visibility: hidden; }
+    .loader-wrap { display: grid; gap: 24px; justify-items: center; }
+    .loader-mark {
+      width: 94px; height: 94px; border: 1px solid #2e3942; border-radius: 28px;
+      position: relative; display: grid; place-items: center; transform: rotate(45deg);
+      background: linear-gradient(145deg, #14191f, #090c0f); box-shadow: var(--shadow);
+    }
+    .loader-mark::before, .loader-mark::after {
+      content: ""; width: 14px; height: 4px; border-radius: 99px; background: var(--accent); position: absolute; top: 42px;
+    }
+    .loader-mark::before { left: 24px; }
+    .loader-mark::after { right: 24px; }
+    .loader-mark span { transform: rotate(-45deg); font-size: 22px; font-weight: 900; letter-spacing: .04em; }
+    .loader-title { font-weight: 900; letter-spacing: .18em; text-transform: uppercase; font-size: 13px; color: #dfe5e9; }
+    .loader-line { width: 170px; height: 3px; border-radius: 999px; overflow: hidden; background: #1c2329; }
+    .loader-line::after { content: ""; display: block; width: 45%; height: 100%; border-radius: inherit; background: var(--accent); animation: load 1.1s infinite ease-in-out; }
+    @keyframes load { 0% { transform: translateX(-115%); } 100% { transform: translateX(330%); } }
+
+    #app { position: relative; z-index: 1; min-height: 100vh; }
+    .shell { width: min(1080px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 60px; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 62px;
+      position: sticky; top: 0; z-index: 20; padding: 12px 0;
+      background: linear-gradient(to bottom, rgba(8,10,13,.96), rgba(8,10,13,.82), transparent);
+      backdrop-filter: blur(8px);
+    }
+    .brand { display: flex; gap: 11px; align-items: center; font-weight: 900; letter-spacing: -.03em; }
+    .brand-mark {
+      width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--line); display: grid; place-items: center;
+      background: #11161b; position: relative; overflow: hidden;
+    }
+    .brand-mark::before, .brand-mark::after { content: ""; width: 7px; height: 2px; border-radius: 99px; background: var(--accent); position: absolute; top: 18px; }
+    .brand-mark::before { left: 9px; transform: rotate(7deg); }
+    .brand-mark::after { right: 9px; transform: rotate(-7deg); }
+    .brand small { display: block; color: var(--muted); font-size: 10px; letter-spacing: .15em; text-transform: uppercase; font-weight: 750; margin-top: 1px; }
+
+    .ghost, .primary, .icon-btn {
+      border: 1px solid var(--line); background: #11161b; border-radius: 14px; cursor: pointer; transition: .18s ease;
+    }
+    .ghost { padding: 10px 14px; color: #ccd3d8; }
+    .ghost:hover, .icon-btn:hover { border-color: #45525d; transform: translateY(-1px); }
+    .primary { border-color: rgba(199,255,58,.35); background: var(--accent); color: #080a0d; font-weight: 900; padding: 11px 15px; }
+    .primary:hover { transform: translateY(-1px); filter: brightness(1.03); }
+    .primary:active, .ghost:active, .icon-btn:active { transform: translateY(0); }
+    .icon-btn { width: 42px; height: 42px; display: grid; place-items: center; font-size: 20px; }
+    .back { display: inline-flex; gap: 8px; align-items: center; color: var(--muted); border: 0; background: transparent; padding: 6px 0; cursor: pointer; }
+    .back:hover { color: var(--text); }
+
+    .hero { padding: 64px 0 38px; }
+    .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: .16em; font-weight: 850; color: var(--accent); }
+    h1 { font-size: clamp(38px, 7vw, 72px); line-height: .95; margin: 12px 0 15px; letter-spacing: -.065em; max-width: 850px; }
+    .hero p { max-width: 620px; color: var(--muted); line-height: 1.65; font-size: 16px; }
+
+    .site-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .site-card {
+      border: 1px solid var(--line); background: linear-gradient(145deg, rgba(23,29,35,.96), rgba(13,17,21,.96));
+      border-radius: var(--radius); padding: 18px; min-height: 126px; display: flex; align-items: center; gap: 16px;
+      cursor: pointer; text-align: left; box-shadow: var(--shadow); position: relative; overflow: hidden;
+    }
+    .site-card::after { content: "›"; position: absolute; right: 18px; bottom: 13px; font-size: 24px; color: #505b64; }
+    .site-card:hover { border-color: #46525c; transform: translateY(-2px); }
+    .site-logo {
+      flex: 0 0 auto; width: 66px; height: 66px; border-radius: 50%; display: grid; place-items: center;
+      font-weight: 950; font-size: 20px; letter-spacing: -.06em; background: #07090b; border: 1px solid #313b43; color: var(--accent);
+      box-shadow: inset 0 0 0 5px rgba(255,255,255,.02);
+    }
+    .site-name { font-size: 19px; font-weight: 880; letter-spacing: -.03em; }
+    .site-meta { color: var(--muted); font-size: 12px; margin-top: 5px; }
+
+    .page-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; padding: 28px 0 18px; }
+    .page-head h2 { margin: 7px 0 0; font-size: clamp(30px, 5vw, 46px); letter-spacing: -.045em; }
+    .controls { display: flex; gap: 10px; align-items: center; margin: 10px 0 22px; }
+    .search-wrap { flex: 1; position: relative; }
+    .search-wrap::before { content: "⌕"; position: absolute; left: 15px; top: 50%; transform: translateY(-53%); color: var(--muted); font-size: 21px; }
+    .search {
+      width: 100%; border: 1px solid var(--line); background: #0e1317; color: var(--text); border-radius: 15px;
+      padding: 13px 15px 13px 43px; outline: 0;
+    }
+    .search:focus { border-color: #4a5964; box-shadow: 0 0 0 3px rgba(199,255,58,.06); }
+
+    .player-list { display: grid; gap: 9px; }
+    .player-row {
+      width: 100%; border: 1px solid #202930; background: rgba(15,20,24,.9); border-radius: 17px; padding: 12px 14px;
+      display: flex; align-items: center; gap: 13px; cursor: pointer; text-align: left; transition: .16s ease;
+    }
+    .player-row:hover { background: #141a20; border-color: #394650; transform: translateX(2px); }
+    .avatar {
+      width: 48px; height: 48px; border-radius: 50%; flex: 0 0 auto; display: grid; place-items: center;
+      background: radial-gradient(circle at 35% 30%, #28313a, #11161a 68%); border: 1px solid #38444e;
+      color: #dfe5e8; font-size: 14px; font-weight: 950; letter-spacing: .03em; overflow: hidden;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .player-main { min-width: 0; flex: 1; }
+    .player-name { font-weight: 850; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .player-sub { color: var(--muted); font-size: 12px; margin-top: 3px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .chev { color: #55616a; font-size: 21px; }
+
+    .empty { border: 1px dashed #2c363e; border-radius: 18px; padding: 42px 18px; text-align: center; color: var(--muted); }
+
+    .profile-hero {
+      margin-top: 20px; border: 1px solid var(--line); border-radius: 26px; padding: 24px;
+      background: linear-gradient(145deg, #151b20, #0d1115); box-shadow: var(--shadow);
+      display: grid; grid-template-columns: 110px 1fr auto; gap: 22px; align-items: center;
+    }
+    .profile-avatar { width: 110px; height: 110px; font-size: 25px; }
+    .profile-title { font-size: clamp(28px, 5vw, 46px); font-weight: 950; letter-spacing: -.05em; overflow-wrap: anywhere; }
+    .aliases { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 12px; }
+    .chip { font-size: 11px; color: #b9c3ca; border: 1px solid #2f3941; background: #0e1216; padding: 6px 9px; border-radius: 999px; }
+
+    .intel { margin-top: 20px; display: grid; gap: 12px; }
+    .trait-card { border: 1px solid var(--line); border-radius: 20px; background: #0f1418; padding: 17px; }
+    .trait-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 13px; }
+    .trait-name { font-weight: 800; }
+    .trait-score { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 900; }
+    .trait-scale { position: relative; height: 8px; border-radius: 99px; background: #242d34; overflow: hidden; }
+    .trait-fill { height: 100%; background: linear-gradient(90deg, #5b6872, var(--accent)); border-radius: inherit; }
+    .trait-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; margin-top: 8px; }
+    .survey-note { color: var(--muted); font-size: 12px; margin-top: 12px; }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.66); backdrop-filter: blur(6px);
+      display: none; align-items: center; justify-content: center; padding: 18px;
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal {
+      width: min(620px, 100%); max-height: min(86vh, 760px); overflow: auto; border: 1px solid #34404a;
+      background: #10151a; border-radius: 24px; padding: 21px; box-shadow: 0 32px 80px rgba(0,0,0,.55);
+    }
+    .modal-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 20px; }
+    .modal h3 { margin: 0; font-size: 24px; letter-spacing: -.035em; }
+    .modal-close { border: 0; background: transparent; color: var(--muted); font-size: 26px; cursor: pointer; }
+    .field { display: grid; gap: 7px; margin-bottom: 14px; }
+    .field label { color: #aab4bb; font-size: 12px; font-weight: 750; }
+    .field input {
+      width: 100%; border: 1px solid var(--line); background: #090d10; color: var(--text);
+      border-radius: 13px; padding: 12px 13px; outline: 0;
+    }
+    .field input:focus { border-color: #4b5964; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 18px; }
+
+    .survey-block { margin: 20px 0 24px; }
+    .survey-row { margin-bottom: 23px; }
+    .survey-row-top { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .survey-row-top strong { font-size: 14px; }
+    .survey-value { color: var(--accent); font-weight: 900; font-variant-numeric: tabular-nums; }
+    .range-wrap { position: relative; padding-top: 3px; }
+    input[type="range"] {
+      width: 100%; accent-color: var(--accent); cursor: pointer;
+    }
+    .tick-row { display: grid; grid-template-columns: repeat(10, 1fr); padding: 1px 7px 0; }
+    .tick-row span { width: 2px; height: 5px; background: #3b454d; justify-self: center; }
+    .range-labels { display: flex; justify-content: space-between; margin-top: 6px; color: var(--muted); font-size: 11px; }
+    .tiny { font-size: 11px; color: var(--muted); line-height: 1.55; }
+
+    .toast {
+      position: fixed; left: 50%; bottom: 24px; z-index: 100; transform: translate(-50%, 20px);
+      opacity: 0; pointer-events: none; background: #1a221d; border: 1px solid rgba(199,255,58,.25);
+      color: #eaffb6; padding: 10px 14px; border-radius: 999px; font-size: 12px; transition: .2s ease;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 760px) {
+      .site-grid { grid-template-columns: 1fr; }
+      .hero { padding-top: 38px; }
+      .profile-hero { grid-template-columns: 78px 1fr; gap: 15px; padding: 18px; }
+      .profile-avatar { width: 78px; height: 78px; font-size: 18px; }
+      .profile-hero .primary { grid-column: 1 / -1; width: 100%; }
+      .page-head { align-items: start; }
+      .controls { align-items: stretch; }
+      .controls .primary { white-space: nowrap; }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+
+  <div id="loading">
+    <div class="loader-wrap">
+      <div class="loader-mark"><span>♠</span></div>
+      <div class="loader-title">Player Tells</div>
+      <div class="loader-line"></div>
+    </div>
+  </div>
+
+  <main id="app"></main>
+
+  <div id="modalBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div id="modal" class="modal"></div>
+  </div>
+
+  <div id="toast" class="toast">Saved</div>
+
+  <script>
+    const STORAGE_KEY = "playerTells_v1";
+
+    const seedSites = [
+      { id: "nightwire", name: "NightWire Poker", initials: "NW" },
+      { id: "riverfox", name: "RiverFox", initials: "RF" },
+      { id: "stackhouse", name: "StackHouse", initials: "SH" }
+    ];
+
+    const seedNames = {
+      nightwire: ["Big_Toe77","3BetBandit","FoldMeMaybe","xXSharkBaitXx","n0Flop4U","MangoStack","river_rat_92","VILLAIN.exe","PocketLint","AceVentura_11"],
+      riverfox: ["Cold4Bet","tinyhammer","DrChipLeader","snap_call99","MoonFish_404","BigBlindBill","degen_ninja","ToastOnTheRiver","QQplease","CheckRaiseCat"],
+      stackhouse: ["StackGoblin","A5sEnjoyer","not_a_bot_88","JammyDodger","TankForValue","OneMoreOrbit","LuckyToe1234","SilentRaiser","BubbleBully","OopsAllBluffs"]
+    };
+
+    const traits = [
+      { key: "ie", left: "Introverted", right: "Extroverted" },
+      { key: "sn", left: "Observant", right: "Intuitive" },
+      { key: "tf", left: "Thinking", right: "Feeling" },
+      { key: "jp", left: "Judging", right: "Prospecting" }
+    ];
+
+    function makeSeedPlayers() {
+      const players = [];
+      Object.keys(seedNames).forEach(function(siteId) {
+        seedNames[siteId].forEach(function(name, index) {
+          players.push({
+            id: siteId + "-" + (index + 1),
+            siteId: siteId,
+            name: name,
+            aliases: index % 3 === 0 ? [name.replace(/[_-]/g, ""), "alt_" + (index + 7)] : [],
+            avatar: "",
+            surveys: seedSurvey(index)
+          });
+        });
+      });
+      return players;
+    }
+
+    function seedSurvey(index) {
+      const base = [
+        { ie: 4, sn: 7, tf: 8, jp: 5 },
+        { ie: 7, sn: 6, tf: 4, jp: 8 },
+        { ie: 2, sn: 8, tf: 7, jp: 3 }
+      ];
+      return [base[index % base.length]];
+    }
+
+    function initialState() {
+      return { sites: seedSites, players: makeSeedPlayers() };
+    }
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (saved && saved.sites && saved.players) return saved;
+      } catch (e) {}
+      const fresh = initialState();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
+      return fresh;
+    }
+
+    let db = loadState();
+    let route = { screen: "sites", siteId: null, playerId: null };
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+    }
+
+    function normalizeSearch(value) {
+      return String(value || "")
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[^a-z0-9]/g, "");
+    }
+
+    function initials(name) {
+      const clean = String(name || "").replace(/[^a-zA-Z0-9]/g, "");
+      return (clean.slice(0, 2) || "PT").toUpperCase();
+    }
+
+    function averageSurvey(player, key) {
+      if (!player.surveys || !player.surveys.length) return 5.5;
+      const vals = player.surveys.map(function(s) { return Number(s[key]); }).filter(Boolean);
+      if (!vals.length) return 5.5;
+      return vals.reduce(function(a, b) { return a + b; }, 0) / vals.length;
+    }
+
+    function esc(value) {
+      return String(value == null ? "" : value).replace(/[&<>"']/g, function(ch) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[ch];
+      });
+    }
+
+    function siteById(id) { return db.sites.find(function(s) { return s.id === id; }); }
+    function playerById(id) { return db.players.find(function(p) { return p.id === id; }); }
+
+    function header(extra) {
+      return '<div class="topbar"><div class="brand"><div class="brand-mark"></div><div>Player Tells<small>Private player intel</small></div></div>' + (extra || "") + '</div>';
+    }
+
+    function render() {
+      if (route.screen === "sites") renderSites();
+      if (route.screen === "players") renderPlayers();
+      if (route.screen === "profile") renderProfile();
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+
+    function renderSites() {
+      const app = document.getElementById("app");
+      app.innerHTML =
+        '<div class="shell">' +
+          header("") +
+          '<section class="hero">' +
+            '<div class="eyebrow">Know the player behind the username</div>' +
+            '<h1>Read patterns.<br>Remember people.</h1>' +
+            '<p>A compact player notebook for your team. Pick a network, find a username and build a shared picture of how that player behaves.</p>' +
+          '</section>' +
+          '<section class="site-grid">' +
+            db.sites.map(function(site) {
+              const count = db.players.filter(function(p) { return p.siteId === site.id; }).length;
+              return '<button class="site-card" data-site="' + esc(site.id) + '">' +
+                '<div class="site-logo">' + esc(site.initials) + '</div>' +
+                '<div><div class="site-name">' + esc(site.name) + '</div><div class="site-meta">' + count + ' players logged</div></div>' +
+              '</button>';
+            }).join("") +
+          '</section>' +
+        '</div>';
+
+      document.querySelectorAll("[data-site]").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          route = { screen: "players", siteId: btn.dataset.site, playerId: null };
+          render();
+        });
+      });
+    }
+
+    function renderPlayers() {
+      const site = siteById(route.siteId);
+      if (!site) { route.screen = "sites"; return render(); }
+
+      const app = document.getElementById("app");
+      app.innerHTML =
+        '<div class="shell">' +
+          header('<button class="ghost" id="homeBtn">All sites</button>') +
+          '<button class="back" id="backSites">← Poker sites</button>' +
+          '<div class="page-head"><div><div class="eyebrow">' + esc(site.name) + '</div><h2>Player directory</h2></div></div>' +
+          '<div class="controls">' +
+            '<div class="search-wrap"><input id="search" class="search" placeholder="Search username or alias…" autocomplete="off"></div>' +
+            '<button class="primary" id="addPlayer">+ Player</button>' +
+          '</div>' +
+          '<div id="playerList" class="player-list"></div>' +
+        '</div>';
+
+      document.getElementById("homeBtn").onclick = goSites;
+      document.getElementById("backSites").onclick = goSites;
+      document.getElementById("addPlayer").onclick = openAddPlayer;
+      document.getElementById("search").addEventListener("input", function(e) { drawPlayerList(e.target.value); });
+      drawPlayerList("");
+    }
+
+    function goSites() {
+      route = { screen: "sites", siteId: null, playerId: null };
+      render();
+    }
+
+    function drawPlayerList(query) {
+      const wrap = document.getElementById("playerList");
+      if (!wrap) return;
+
+      const q = normalizeSearch(query);
+      const players = db.players
+        .filter(function(p) { return p.siteId === route.siteId; })
+        .filter(function(p) {
+          if (!q) return true;
+          const haystack = [p.name].concat(p.aliases || []).map(normalizeSearch);
+          return haystack.some(function(part) { return part.includes(q); });
+        })
+        .sort(function(a, b) { return a.name.localeCompare(b.name, undefined, { sensitivity: "base" }); });
+
+      if (!players.length) {
+        wrap.innerHTML = '<div class="empty">No player matches that search.</div>';
+        return;
+      }
+
+      wrap.innerHTML = players.map(function(p) {
+        const aliasText = p.aliases && p.aliases.length ? p.aliases.join(" · ") : "No aliases added";
+        return '<button class="player-row" data-player="' + esc(p.id) + '">' +
+          '<div class="avatar">' + (p.avatar ? '<img src="' + esc(p.avatar) + '" alt="">' : esc(initials(p.name))) + '</div>' +
+          '<div class="player-main"><div class="player-name">' + esc(p.name) + '</div><div class="player-sub">' + esc(aliasText) + '</div></div>' +
+          '<div class="chev">›</div>' +
+        '</button>';
+      }).join("");
+
+      document.querySelectorAll("[data-player]").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          route = { screen: "profile", siteId: route.siteId, playerId: btn.dataset.player };
+          render();
+        });
+      });
+    }
+
+    function openAddPlayer() {
+      const site = siteById(route.siteId);
+      openModal(
+        '<div class="modal-head"><div><div class="eyebrow">' + esc(site.name) + '</div><h3>Add player</h3></div><button class="modal-close" data-close>×</button></div>' +
+        '<form id="addPlayerForm">' +
+          '<div class="field"><label>Username</label><input name="name" required placeholder="e.g. Big_Toe77"></div>' +
+          '<div class="field"><label>Aliases <span class="tiny">(optional, comma separated)</span></label><input name="aliases" placeholder="Other usernames, nicknames…"></div>' +
+          '<div class="field"><label>Profile image URL <span class="tiny">(optional for prototype)</span></label><input name="avatar" placeholder="https://…"></div>' +
+          '<div class="form-actions"><button class="ghost" type="button" data-close>Cancel</button><button class="primary" type="submit">Add player</button></div>' +
+        '</form>'
+      );
+
+      document.getElementById("addPlayerForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const form = new FormData(e.target);
+        const name = String(form.get("name") || "").trim();
+        if (!name) return;
+
+        const player = {
+          id: route.siteId + "-" + Date.now(),
+          siteId: route.siteId,
+          name: name,
+          aliases: String(form.get("aliases") || "").split(",").map(function(x) { return x.trim(); }).filter(Boolean),
+          avatar: String(form.get("avatar") || "").trim(),
+          surveys: []
+        };
+        db.players.push(player);
+        saveState();
+        closeModal();
+        drawPlayerList(document.getElementById("search").value);
+        toast("Player added");
+      });
+    }
+
+    function renderProfile() {
+      const player = playerById(route.playerId);
+      const site = siteById(route.siteId);
+      if (!player || !site) { route.screen = "players"; return render(); }
+
+      const app = document.getElementById("app");
+      const aliasHtml = (player.aliases && player.aliases.length)
+        ? player.aliases.map(function(a) { return '<span class="chip">' + esc(a) + '</span>'; }).join("")
+        : '<span class="chip">No aliases yet</span>';
+
+      const traitsHtml = traits.map(function(t) {
+        const avg = averageSurvey(player, t.key);
+        const pct = ((avg - 1) / 9) * 100;
+        return '<div class="trait-card">' +
+          '<div class="trait-head"><div class="trait-name">' + esc(t.left) + ' ↔ ' + esc(t.right) + '</div><div class="trait-score">' + avg.toFixed(1) + '/10</div></div>' +
+          '<div class="trait-scale"><div class="trait-fill" style="width:' + pct.toFixed(1) + '%"></div></div>' +
+          '<div class="trait-labels"><span>' + esc(t.left) + '</span><span>' + esc(t.right) + '</span></div>' +
+        '</div>';
+      }).join("");
+
+      app.innerHTML =
+        '<div class="shell">' +
+          header('<button class="ghost" id="homeBtn">All sites</button>') +
+          '<button class="back" id="backPlayers">← ' + esc(site.name) + '</button>' +
+          '<section class="profile-hero">' +
+            '<div class="avatar profile-avatar">' + (player.avatar ? '<img src="' + esc(player.avatar) + '" alt="">' : esc(initials(player.name))) + '</div>' +
+            '<div><div class="eyebrow">' + esc(site.name) + '</div><div class="profile-title">' + esc(player.name) + '</div><div class="aliases">' + aliasHtml + '</div></div>' +
+            '<button class="primary" id="addSurvey">+ Add survey</button>' +
+          '</section>' +
+          '<section class="intel">' + traitsHtml + '</section>' +
+          '<div class="survey-note">' + (player.surveys ? player.surveys.length : 0) + ' survey' + ((player.surveys || []).length === 1 ? '' : 's') + ' contributing to these averages.</div>' +
+        '</div>';
+
+      document.getElementById("homeBtn").onclick = goSites;
+      document.getElementById("backPlayers").onclick = function() {
+        route = { screen: "players", siteId: route.siteId, playerId: null };
+        render();
+      };
+      document.getElementById("addSurvey").onclick = function() { openSurvey(player); };
+    }
+
+    function openSurvey(player) {
+      const rows = traits.map(function(t) {
+        return '<div class="survey-row">' +
+          '<div class="survey-row-top"><strong>' + esc(t.left) + ' ↔ ' + esc(t.right) + '</strong><span class="survey-value" id="value-' + t.key + '">5</span></div>' +
+          '<div class="range-wrap">' +
+            '<input type="range" name="' + t.key + '" min="1" max="10" value="5" step="1">' +
+            '<div class="tick-row">' + new Array(10).fill('<span></span>').join("") + '</div>' +
+          '</div>' +
+          '<div class="range-labels"><span>' + esc(t.left) + '</span><span>' + esc(t.right) + '</span></div>' +
+        '</div>';
+      }).join("");
+
+      openModal(
+        '<div class="modal-head"><div><div class="eyebrow">' + esc(player.name) + '</div><h3>Add your read</h3></div><button class="modal-close" data-close>×</button></div>' +
+        '<div class="tiny">Each slider snaps to one of ten positions. The player profile displays the average from every submitted survey.</div>' +
+        '<form id="surveyForm"><div class="survey-block">' + rows + '</div>' +
+        '<div class="form-actions"><button class="ghost" type="button" data-close>Cancel</button><button class="primary" type="submit">Save survey</button></div></form>'
+      );
+
+      document.querySelectorAll('#surveyForm input[type="range"]').forEach(function(input) {
+        input.addEventListener("input", function() {
+          document.getElementById("value-" + input.name).textContent = input.value;
+        });
+      });
+
+      document.getElementById("surveyForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const form = new FormData(e.target);
+        const survey = {};
+        traits.forEach(function(t) { survey[t.key] = Number(form.get(t.key)); });
+        player.surveys = player.surveys || [];
+        player.surveys.push(survey);
+        saveState();
+        closeModal();
+        renderProfile();
+        toast("Survey added to the average");
+      });
+    }
+
+    function openModal(html) {
+      const backdrop = document.getElementById("modalBackdrop");
+      document.getElementById("modal").innerHTML = html;
+      backdrop.classList.add("show");
+      backdrop.setAttribute("aria-hidden", "false");
+      document.querySelectorAll("[data-close]").forEach(function(btn) { btn.onclick = closeModal; });
+    }
+
+    function closeModal() {
+      const backdrop = document.getElementById("modalBackdrop");
+      backdrop.classList.remove("show");
+      backdrop.setAttribute("aria-hidden", "true");
+    }
+
+    function toast(message) {
+      const el = document.getElementById("toast");
+      el.textContent = message;
+      el.classList.add("show");
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(function() { el.classList.remove("show"); }, 1900);
+    }
+
+    document.getElementById("modalBackdrop").addEventListener("click", function(e) {
+      if (e.target.id === "modalBackdrop") closeModal();
+    });
+
+    window.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") closeModal();
+    });
+
+    render();
+    setTimeout(function() { document.getElementById("loading").classList.add("hide"); }, 1050);
+  </script>
+</body>
+</html>
