@@ -246,6 +246,45 @@
     }
     .settings-nav-btn small { display: block; color: var(--muted); font-size: 10px; margin-top: 2px; font-weight: 500; }
 
+    .topbar-actions { display: flex; align-items: center; gap: 8px; }
+    .top-profile-btn {
+      width: 42px; height: 42px; padding: 0; border-radius: 50%; overflow: hidden;
+      display: grid; place-items: center; border: 1px solid var(--line); background: var(--panel-2);
+      color: var(--text); font-size: 11px; font-weight: 900; cursor: pointer;
+    }
+    .top-profile-btn img { width: 100%; height: 100%; object-fit: cover; }
+    .my-profile-card {
+      margin-top: 20px; border: 1px solid var(--line); background: var(--panel); border-radius: 24px;
+      padding: 22px; display: flex; align-items: center; gap: 18px; box-shadow: var(--shadow);
+    }
+    .my-profile-avatar { width: 86px; height: 86px; font-size: 20px; }
+    .my-profile-info { flex: 1; min-width: 0; }
+    .my-profile-name { font-size: 30px; font-weight: 950; letter-spacing: -.04em; }
+    .profile-stats-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-top: 14px; }
+    .profile-stat {
+      border: 1px solid var(--line); background: var(--field); border-radius: 14px; padding: 12px;
+    }
+    .profile-stat strong { display: block; font-size: 20px; }
+    .profile-stat span { color: var(--muted); font-size: 10px; }
+    .history-section { margin-top: 28px; }
+    .history-list { display: grid; gap: 9px; }
+    .history-card {
+      border: 1px solid var(--line); background: var(--panel); border-radius: 16px; padding: 13px;
+      cursor: pointer; text-align: left;
+    }
+    .history-card:hover { border-color: rgba(var(--accent-rgb),.35); }
+    .history-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .history-player { font-weight: 850; font-size: 12px; }
+    .history-site { color: var(--muted); font-size: 10px; }
+    .history-traits { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+    .history-chip { border: 1px solid var(--line); border-radius: 999px; padding: 4px 7px; color: var(--muted); font-size: 9px; }
+    .comment-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .comment-action {
+      border: 0; background: transparent; padding: 0; cursor: pointer; color: var(--muted); font-size: 10px;
+    }
+    .comment-action:hover { color: var(--accent); }
+    .comment-action.delete:hover { color: #ff6b6b; }
+
     .profile-hero {
       margin-top: 20px; border: 1px solid var(--line); border-radius: 26px; padding: 24px;
       background: var(--panel); box-shadow: var(--shadow); display: grid; grid-template-columns: 110px 1fr auto; gap: 22px; align-items: center;
@@ -431,6 +470,8 @@
       .comment-form { align-items: stretch; }
       .comment-form .primary { padding-inline: 13px; }
       .edit-site-grid { grid-template-columns: 1fr; }
+      .my-profile-card { align-items: flex-start; flex-wrap: wrap; }
+      .my-profile-card .primary { width: 100%; }
     }
   </style>
 </head>
@@ -441,31 +482,8 @@
     <div class="loader-wrap">
       <div class="logo-pulse-shell">
         <div class="loader-logo" aria-label="Player Tells">
-          <svg viewBox="0 0 402 521" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" shape-rendering="geometricPrecision">
-            <path d="M 198 0 L 152 76 L 103 145 L 60 197 L 0 260 L 62 325 L 106 379 L 152 444 L 198 520 L 248 437 L 291 377 L 339 319 L 396 260 L 360 224 L 341 202 L 372 194 L 401 180 L 383 153 L 372 142 L 357 132 L 337 124 L 343 103 L 345 41 L 296 85 L 278 96 L 262 103 L 232 58 Z
-                     M 198 41 L 224 84 L 258 133 L 276 119 L 305 104 L 322 90 L 322 102 L 316 123 L 303 146 L 309 144 L 329 144 L 340 147 L 355 155 L 370 171 L 361 176 L 340 181 L 311 180 L 288 172 L 322 213 L 366 260 L 320 309 L 274 365 L 235 419 L 200 476 L 197 478 L 169 432 L 123 367 L 79 313 L 29 260 L 78 208 L 119 158 L 161 100 Z"
-                  fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/>
-            <path d="M 101 246
-                     C 108 226, 130 209, 157 202
-                     C 177 197, 219 197, 239 202
-                     C 267 209, 288 226, 296 246
-                     C 300 257, 300 271, 296 282
-                     C 291 296, 278 306, 262 310
-                     C 247 314, 233 311, 219 307
-                     C 205 303, 191 302, 178 304
-                     C 166 305, 153 310, 140 311
-                     C 122 312, 107 306, 98 295
-                     C 88 283, 86 266, 91 253
-                     C 93 250, 96 248, 101 246 Z"
-                  fill="currentColor"/>
-            <path d="M 116 258
-                     C 120 246, 130 238, 142 238
-                     C 154 238, 163 246, 166 258 Z"
-                  fill="#050607"/>
-            <path d="M 230 258
-                     C 233 246, 242 238, 254 238
-                     C 266 238, 276 246, 280 258 Z"
-                  fill="#050607"/>
+          <svg viewBox="0 0 282 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" shape-rendering="geometricPrecision">
+            <path d="M 139 11 L 136 15 L 135 18 L 133 20 L 131 25 L 129 27 L 125 35 L 123 37 L 122 40 L 120 42 L 119 45 L 117 47 L 116 50 L 114 52 L 114 53 L 112 55 L 112 56 L 110 58 L 110 59 L 108 61 L 108 62 L 106 64 L 106 65 L 104 67 L 104 68 L 102 70 L 102 71 L 100 73 L 100 74 L 98 76 L 96 80 L 93 83 L 91 87 L 88 90 L 88 91 L 85 94 L 85 95 L 82 98 L 82 99 L 79 102 L 79 103 L 76 106 L 76 107 L 72 111 L 72 112 L 68 116 L 68 117 L 63 122 L 63 123 L 58 128 L 58 129 L 52 135 L 52 136 L 43 145 L 43 146 L 33 156 L 33 157 L 31 158 L 31 159 L 11 179 L 11 180 L 35 204 L 35 205 L 45 215 L 45 216 L 52 223 L 52 224 L 58 230 L 58 231 L 63 236 L 63 237 L 68 242 L 68 243 L 76 252 L 76 253 L 79 256 L 79 257 L 82 260 L 82 261 L 91 272 L 91 273 L 93 275 L 95 279 L 98 282 L 98 283 L 100 285 L 102 289 L 105 292 L 106 295 L 108 297 L 108 298 L 116 309 L 117 312 L 119 314 L 120 317 L 122 319 L 123 322 L 125 324 L 126 327 L 128 329 L 129 332 L 131 334 L 132 337 L 134 339 L 136 344 L 139 348 L 142 344 L 143 341 L 145 339 L 146 336 L 148 334 L 150 329 L 152 327 L 156 319 L 158 317 L 161 311 L 163 309 L 164 306 L 166 304 L 166 303 L 168 301 L 168 300 L 170 298 L 170 297 L 172 295 L 172 294 L 174 292 L 174 291 L 176 289 L 176 288 L 178 286 L 180 282 L 183 279 L 183 278 L 185 276 L 187 272 L 190 269 L 190 268 L 193 265 L 193 264 L 196 261 L 196 260 L 199 257 L 199 256 L 203 252 L 203 251 L 207 247 L 207 246 L 215 237 L 215 236 L 220 231 L 220 230 L 234 215 L 234 214 L 267 180 L 267 179 L 248 160 L 248 159 L 234 145 L 234 144 L 232 142 L 233 141 L 238 141 L 239 140 L 242 140 L 243 139 L 246 139 L 247 138 L 252 137 L 271 127 L 269 125 L 269 124 L 267 122 L 267 121 L 265 119 L 263 115 L 260 112 L 260 111 L 251 102 L 250 102 L 247 99 L 242 97 L 240 95 L 238 95 L 237 94 L 232 93 L 230 91 L 230 89 L 231 88 L 231 85 L 232 84 L 232 81 L 233 80 L 233 73 L 234 72 L 234 42 L 235 41 L 235 37 L 234 37 L 222 49 L 221 49 L 209 61 L 208 61 L 204 65 L 203 65 L 195 71 L 181 78 L 178 74 L 178 73 L 176 71 L 176 70 L 174 68 L 174 67 L 172 65 L 172 64 L 170 62 L 170 61 L 168 59 L 168 58 L 166 56 L 166 55 L 164 53 L 163 50 L 161 48 L 160 45 L 156 40 L 155 37 L 153 35 L 152 32 L 150 30 L 148 25 L 146 23 L 145 20 L 143 18 L 142 15 Z M 139 38 L 141 40 L 142 43 L 144 45 L 148 53 L 154 61 L 155 64 L 157 66 L 157 67 L 159 69 L 159 70 L 161 72 L 161 73 L 163 75 L 163 76 L 165 78 L 165 79 L 167 81 L 169 85 L 172 88 L 172 89 L 178 97 L 179 97 L 184 92 L 185 92 L 190 88 L 208 79 L 219 70 L 220 71 L 220 75 L 219 76 L 219 79 L 218 80 L 218 84 L 217 85 L 216 90 L 211 100 L 207 105 L 212 105 L 213 104 L 222 104 L 223 105 L 227 105 L 228 106 L 233 107 L 239 110 L 242 113 L 243 113 L 249 119 L 250 121 L 249 123 L 245 125 L 243 125 L 242 126 L 239 126 L 238 127 L 235 127 L 234 128 L 214 128 L 213 127 L 210 127 L 209 126 L 206 126 L 205 125 L 203 125 L 197 122 L 203 129 L 203 130 L 208 135 L 208 136 L 214 142 L 214 143 L 231 161 L 231 162 L 248 179 L 248 180 L 230 198 L 230 199 L 221 208 L 221 209 L 214 216 L 214 217 L 202 230 L 202 231 L 199 234 L 199 235 L 191 244 L 191 245 L 188 248 L 188 249 L 185 252 L 185 253 L 176 264 L 174 268 L 171 271 L 171 272 L 169 274 L 167 278 L 164 281 L 161 287 L 159 289 L 159 290 L 151 301 L 150 304 L 148 306 L 147 309 L 145 311 L 144 314 L 142 316 L 141 319 L 139 321 L 136 317 L 136 316 L 134 314 L 132 309 L 128 304 L 127 301 L 119 290 L 118 287 L 116 285 L 114 281 L 111 278 L 111 277 L 109 275 L 107 271 L 104 268 L 102 264 L 99 261 L 99 260 L 96 257 L 96 256 L 93 253 L 93 252 L 90 249 L 90 248 L 87 245 L 87 244 L 79 235 L 79 234 L 76 231 L 76 230 L 65 218 L 65 217 L 59 211 L 59 210 L 30 180 L 30 179 L 49 160 L 49 159 L 58 150 L 58 149 L 76 129 L 76 128 L 79 125 L 79 124 L 87 115 L 87 114 L 90 111 L 90 110 L 93 107 L 93 106 L 102 95 L 104 91 L 107 88 L 107 87 L 109 85 L 109 84 L 111 82 L 113 78 L 116 75 L 117 72 L 119 70 L 119 69 L 127 58 L 128 55 L 130 53 L 131 50 L 133 48 L 134 45 L 136 43 L 137 40 Z M 69 176 L 69 184 L 72 190 L 72 192 L 74 194 L 76 198 L 81 203 L 82 203 L 84 205 L 90 208 L 92 208 L 93 209 L 96 209 L 97 210 L 113 210 L 114 209 L 117 209 L 121 207 L 125 207 L 126 206 L 134 206 L 135 205 L 141 205 L 142 206 L 151 206 L 152 207 L 155 207 L 156 208 L 158 208 L 159 209 L 163 209 L 164 210 L 179 210 L 180 209 L 184 209 L 194 204 L 202 196 L 203 193 L 205 191 L 205 189 L 207 185 L 207 174 L 206 173 L 206 170 L 203 164 L 201 162 L 201 161 L 195 154 L 194 154 L 188 149 L 180 145 L 178 145 L 175 143 L 172 143 L 171 142 L 168 142 L 167 141 L 162 141 L 161 140 L 156 140 L 155 139 L 122 139 L 121 140 L 115 140 L 114 141 L 109 141 L 108 142 L 105 142 L 104 143 L 102 143 L 101 144 L 96 145 L 90 148 L 85 152 L 84 152 L 76 160 L 76 161 L 74 163 L 71 169 L 71 171 L 70 172 L 70 175 Z M 158 176 L 161 170 L 164 167 L 170 164 L 178 164 L 179 165 L 181 165 L 183 166 L 188 171 L 190 175 L 189 177 L 159 177 Z M 86 175 L 87 174 L 87 172 L 90 169 L 90 168 L 96 164 L 98 164 L 99 163 L 105 163 L 106 164 L 108 164 L 110 165 L 116 171 L 118 175 L 118 177 L 117 178 L 87 178 L 86 177 Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/>
           </svg>
         </div>
       </div>
@@ -484,6 +502,7 @@
   <script>
     const STORAGE_KEY = "playerTells_v1";
     const SETTINGS_KEY = "playerTells_settings_v1";
+    const USER_KEY = "playerTells_user_v1";
 
     const seedSites = [
       { id: "nightwire", name: "NightWire Poker", initials: "NW", nickname: "", avatar: "" },
@@ -511,7 +530,19 @@
       { id: "sam", name: "Sam", avatar: "" }
     ];
 
-    const currentUser = { id: "you", name: "You", avatar: "" };
+    function loadCurrentUser() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(USER_KEY));
+        if (saved && saved.id === "you") return {
+          id: "you",
+          name: String(saved.name || "You"),
+          avatar: String(saved.avatar || "")
+        };
+      } catch (e) {}
+      return { id: "you", name: "You", avatar: "" };
+    }
+
+    let currentUser = loadCurrentUser();
     const tagSets = [["NLH","Cash"],["MTT","NLH"],["Heads-up","Cash"],["High volume","NLH"]];
 
     const commentSamples = [
@@ -647,6 +678,7 @@
 
     function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
     function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+    function saveCurrentUser() { localStorage.setItem(USER_KEY, JSON.stringify(currentUser)); }
 
     function hexToRgb(hex) {
       const value = hex.replace("#", "");
@@ -707,12 +739,22 @@
 
     function header() {
       return '<div class="topbar"><div class="brand"><div class="brand-mark"></div><div>Player Tells<small>Private player intel</small></div></div>' +
-        '<button class="icon-btn" id="settingsBtn" aria-label="Settings">' + settingsIcon() + '</button></div>';
+        '<div class="topbar-actions">' +
+          '<button class="top-profile-btn" id="profileBtn" aria-label="My profile">' +
+            (currentUser.avatar ? '<img src="' + esc(currentUser.avatar) + '" alt="">' : esc(initials(currentUser.name))) +
+          '</button>' +
+          '<button class="icon-btn" id="settingsBtn" aria-label="Settings">' + settingsIcon() + '</button>' +
+        '</div></div>';
     }
 
     function bindHeader() {
-      const btn = document.getElementById("settingsBtn");
-      if (btn) btn.onclick = openSettings;
+      const settingsBtn = document.getElementById("settingsBtn");
+      if (settingsBtn) settingsBtn.onclick = openSettings;
+      const profileBtn = document.getElementById("profileBtn");
+      if (profileBtn) profileBtn.onclick = function() {
+        route = { screen: "myProfile", siteId: null, playerId: null };
+        render();
+      };
     }
 
     function avatarHtml(person, cls) {
@@ -735,6 +777,7 @@
       if (route.screen === "profile") renderProfile();
       if (route.screen === "editSites") renderEditSites();
       if (route.screen === "editPlayers") renderEditPlayers();
+      if (route.screen === "myProfile") renderMyProfile();
       window.scrollTo({ top: 0, behavior: "instant" });
     }
 
@@ -1114,6 +1157,177 @@
     }
 
 
+    function authorIsCurrent(author) {
+      return !!author && author.id === currentUser.id;
+    }
+
+    function resolveAuthor(author) {
+      return authorIsCurrent(author) ? currentUser : (author || { name: "Unknown", avatar: "" });
+    }
+
+    function myVoteHistory() {
+      const rows = [];
+      db.players.forEach(function(player) {
+        (player.surveys || []).forEach(function(survey, index) {
+          if (authorIsCurrent(survey.author)) rows.push({ player: player, survey: survey, index: index });
+        });
+      });
+      return rows.reverse();
+    }
+
+    function myCommentHistory() {
+      const rows = [];
+      db.players.forEach(function(player) {
+        (player.comments || []).forEach(function(comment) {
+          if (authorIsCurrent(comment.author)) rows.push({ player: player, comment: comment });
+        });
+      });
+      return rows.reverse();
+    }
+
+    function renderMyProfile() {
+      const votes = myVoteHistory();
+      const comments = myCommentHistory();
+
+      const voteHtml = votes.length ? votes.map(function(item) {
+        const site = siteById(item.player.siteId);
+        return '<button class="history-card" data-history-player="' + esc(item.player.id) + '">' +
+          '<div class="history-top"><div><div class="history-player">' + esc(item.player.name) + '</div>' +
+          '<div class="history-site">' + esc(site ? site.name : "Unknown site") + '</div></div><span class="chev">›</span></div>' +
+          '<div class="history-traits">' +
+            traits.map(function(t) { return '<span class="history-chip">' + esc(t.left) + ' / ' + esc(t.right) + ': ' + esc(item.survey[t.key]) + '</span>'; }).join("") +
+          '</div>' +
+        '</button>';
+      }).join("") : '<div class="empty">You haven’t submitted any surveys yet.</div>';
+
+      const commentHtml = comments.length ? comments.map(function(item) {
+        const site = siteById(item.player.siteId);
+        return '<div class="history-card">' +
+          '<div class="history-top"><div><div class="history-player">' + esc(item.player.name) + '</div>' +
+          '<div class="history-site">' + esc(site ? site.name : "Unknown site") + '</div></div></div>' +
+          '<div class="comment-body">' + esc(item.comment.body) + '</div>' +
+          '<div class="comment-actions">' +
+            '<button class="comment-action" data-profile-edit-comment="' + esc(item.comment.id) + '" data-comment-player="' + esc(item.player.id) + '">Edit</button>' +
+            '<button class="comment-action delete" data-profile-delete-comment="' + esc(item.comment.id) + '" data-comment-player="' + esc(item.player.id) + '">Delete</button>' +
+          '</div>' +
+        '</div>';
+      }).join("") : '<div class="empty">You haven’t written any comments yet.</div>';
+
+      document.getElementById("app").innerHTML =
+        '<div class="shell">' +
+          header() +
+          '<button class="back" id="profileBack">← Home</button>' +
+          '<section class="my-profile-card">' +
+            avatarHtml(currentUser, "avatar my-profile-avatar") +
+            '<div class="my-profile-info"><div class="eyebrow">My profile</div><div class="my-profile-name">' + esc(currentUser.name) + '</div>' +
+            '<div class="profile-stats-grid"><div class="profile-stat"><strong>' + votes.length + '</strong><span>Votes</span></div>' +
+            '<div class="profile-stat"><strong>' + comments.length + '</strong><span>Comments</span></div></div></div>' +
+            '<button class="primary" id="editMyProfile">Edit profile</button>' +
+          '</section>' +
+          '<section class="history-section"><div class="section-title"><h3>My votes</h3><span class="tiny">' + votes.length + '</span></div><div class="history-list">' + voteHtml + '</div></section>' +
+          '<section class="history-section"><div class="section-title"><h3>My comments</h3><span class="tiny">' + comments.length + '</span></div><div class="history-list">' + commentHtml + '</div></section>' +
+        '</div>';
+
+      bindHeader();
+      document.getElementById("profileBack").onclick = goSites;
+      document.getElementById("editMyProfile").onclick = openEditMyProfile;
+
+      document.querySelectorAll("[data-history-player]").forEach(function(btn) {
+        btn.onclick = function() {
+          const player = playerById(btn.dataset.historyPlayer);
+          if (!player) return;
+          route = { screen: "profile", siteId: player.siteId, playerId: player.id };
+          render();
+        };
+      });
+
+      bindOwnCommentActions(true);
+    }
+
+    function openEditMyProfile() {
+      let editedAvatar = currentUser.avatar || "";
+      openModal(
+        '<div class="modal-head"><div><div class="eyebrow">My profile</div><h3>Edit profile</h3></div><button class="modal-close" data-close>×</button></div>' +
+        '<form id="editMyProfileForm">' +
+          imageEditorMarkup(currentUser.name, editedAvatar) +
+          '<div class="field"><label>Display name</label><input name="name" required value="' + esc(currentUser.name) + '"></div>' +
+          '<div class="form-actions"><button class="ghost" type="button" data-close>Cancel</button><button class="primary" type="submit">Save</button></div>' +
+        '</form>'
+      );
+
+      bindImageEditor(editedAvatar, function(v) { editedAvatar = v; });
+      document.getElementById("editMyProfileForm").onsubmit = function(e) {
+        e.preventDefault();
+        const form = new FormData(e.target);
+        currentUser.name = String(form.get("name") || "").trim() || "You";
+        currentUser.avatar = editedAvatar;
+        saveCurrentUser();
+        closeModal();
+        renderMyProfile();
+        toast("Profile updated");
+      };
+    }
+
+    function findOwnComment(playerId, commentId) {
+      const player = playerById(playerId);
+      if (!player) return null;
+      const comment = (player.comments || []).find(function(c) { return c.id === commentId && authorIsCurrent(c.author); });
+      return comment ? { player: player, comment: comment } : null;
+    }
+
+    function openEditOwnComment(playerId, commentId, fromMyProfile) {
+      const found = findOwnComment(playerId, commentId);
+      if (!found) return;
+      openModal(
+        '<div class="modal-head"><div><div class="eyebrow">' + esc(found.player.name) + '</div><h3>Edit comment</h3></div><button class="modal-close" data-close>×</button></div>' +
+        '<form id="editOwnCommentForm"><div class="field"><label>Comment</label><textarea name="body" rows="5">' + esc(found.comment.body) + '</textarea></div>' +
+        '<div class="form-actions"><button class="ghost" type="button" data-close>Cancel</button><button class="primary" type="submit">Save changes</button></div></form>'
+      );
+      document.getElementById("editOwnCommentForm").onsubmit = function(e) {
+        e.preventDefault();
+        const body = String(new FormData(e.target).get("body") || "").trim();
+        if (!body) return;
+        found.comment.body = body;
+        found.comment.time = "Edited " + new Date().toLocaleDateString();
+        saveState();
+        closeModal();
+        if (fromMyProfile) renderMyProfile(); else renderProfile();
+        toast("Comment updated");
+      };
+    }
+
+    function deleteOwnComment(playerId, commentId, fromMyProfile) {
+      const found = findOwnComment(playerId, commentId);
+      if (!found) return;
+      openModal(
+        '<div class="modal-head"><h3>Delete comment?</h3><button class="modal-close" data-close>×</button></div>' +
+        '<div class="tiny">This removes your comment from ' + esc(found.player.name) + '.</div>' +
+        '<div class="form-actions"><button class="ghost" type="button" data-close>Cancel</button><button class="primary" id="confirmDeleteComment" type="button">Delete</button></div>'
+      );
+      document.getElementById("confirmDeleteComment").onclick = function() {
+        found.player.comments = (found.player.comments || []).filter(function(c) { return c.id !== commentId; });
+        saveState();
+        closeModal();
+        if (fromMyProfile) renderMyProfile(); else renderProfile();
+        toast("Comment deleted");
+      };
+    }
+
+    function bindOwnCommentActions(fromMyProfile) {
+      document.querySelectorAll(fromMyProfile ? "[data-profile-edit-comment]" : "[data-edit-comment]").forEach(function(btn) {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          openEditOwnComment(btn.dataset.commentPlayer, fromMyProfile ? btn.dataset.profileEditComment : btn.dataset.editComment, fromMyProfile);
+        };
+      });
+      document.querySelectorAll(fromMyProfile ? "[data-profile-delete-comment]" : "[data-delete-comment]").forEach(function(btn) {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          deleteOwnComment(btn.dataset.commentPlayer, fromMyProfile ? btn.dataset.profileDeleteComment : btn.dataset.deleteComment, fromMyProfile);
+        };
+      });
+    }
+
     function renderEditSites() {
       document.getElementById("app").innerHTML =
         '<div class="shell">' +
@@ -1383,6 +1597,8 @@
         btn.onclick = function() { openVoteBreakdown(player, btn.dataset.trait); };
       });
 
+      bindOwnCommentActions(false);
+
       const form = document.getElementById("commentForm");
       if (form) {
         form.addEventListener("submit", function(e) {
@@ -1392,7 +1608,7 @@
           player.comments = player.comments || [];
           player.comments.push({
             id: "comment-" + Date.now(),
-            author: currentUser,
+            author: { id: currentUser.id, name: currentUser.name, avatar: currentUser.avatar },
             body: text,
             time: new Date().toLocaleDateString()
           });
@@ -1409,10 +1625,14 @@
         '<div class="section-title"><h3>Comments</h3><span class="tiny">' + comments.length + '</span></div>' +
         '<div class="comment-list">' +
           (comments.length ? comments.map(function(c) {
+            const author = resolveAuthor(c.author);
+            const own = authorIsCurrent(c.author);
             return '<div class="comment">' +
-              avatarHtml(c.author, "user-avatar") +
-              '<div><div class="comment-head"><span class="comment-name">' + esc((c.author || {}).name || "Unknown") + '</span><span class="comment-time">' + esc(c.time || "") + '</span></div>' +
-              '<div class="comment-body">' + esc(c.body) + '</div></div>' +
+              avatarHtml(author, "user-avatar") +
+              '<div><div class="comment-head"><span class="comment-name">' + esc(author.name || "Unknown") + '</span><span class="comment-time">' + esc(c.time || "") + '</span></div>' +
+              '<div class="comment-body">' + esc(c.body) + '</div>' +
+              (own ? '<div class="comment-actions"><button class="comment-action" data-edit-comment="' + esc(c.id) + '" data-comment-player="' + esc(player.id) + '">Edit</button><button class="comment-action delete" data-delete-comment="' + esc(c.id) + '" data-comment-player="' + esc(player.id) + '">Delete</button></div>' : '') +
+              '</div>' +
             '</div>';
           }).join("") : '<div class="empty">No comments yet.</div>') +
         '</div>' +
@@ -1431,7 +1651,7 @@
       const rows = votes.length ? votes.map(function(vote) {
         const value = Number(vote[key]);
         const pct = ((value - 1) / 9) * 100;
-        const author = vote.author || { name: "Unknown", avatar: "" };
+        const author = resolveAuthor(vote.author);
         return '<div class="vote-row">' +
           avatarHtml(author, "user-avatar") +
           '<div><div class="vote-name">' + esc(author.name || "Unknown") + '</div>' +
@@ -1473,7 +1693,7 @@
       document.getElementById("surveyForm").addEventListener("submit", function(e) {
         e.preventDefault();
         const form = new FormData(e.target);
-        const survey = { author: currentUser };
+        const survey = { author: { id: currentUser.id, name: currentUser.name, avatar: currentUser.avatar } };
         traits.forEach(function(t) { survey[t.key] = Number(form.get(t.key)); });
         player.surveys = player.surveys || [];
         player.surveys.push(survey);
