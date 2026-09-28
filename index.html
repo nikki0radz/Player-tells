@@ -409,6 +409,7 @@
     .profile-hero {
       margin-top: 20px; border: 1px solid var(--line); border-radius: 26px; padding: 24px;
       background: var(--panel); box-shadow: var(--shadow); display: grid; grid-template-columns: 132px 1fr auto; gap: 34px; align-items: center;
+      position: relative;
     }
     .profile-avatar { width: 132px; height: 132px; font-size: 28px; }
     .survey-cta {
@@ -416,6 +417,17 @@
       padding: 5px 10px; min-height: 0; border-radius: 10px;
       font-size: 10px; line-height: 1.2; font-weight: 850;
       box-shadow: none;
+    }
+    .profile-favourite-corner {
+      position: absolute; top: 10px; right: 10px;
+      width: 28px; height: 28px; border-radius: 9px;
+      border: 1px solid var(--line); background: var(--field); color: var(--muted);
+      display: grid; place-items: center; padding: 0; cursor: pointer;
+      font-size: 15px; line-height: 1; transition: .15s ease;
+    }
+    .profile-favourite-corner:hover { border-color: rgba(var(--accent-rgb),.42); color: var(--accent); }
+    .profile-favourite-corner.active {
+      color: var(--accent); border-color: rgba(var(--accent-rgb),.40); background: rgba(var(--accent-rgb),.06);
     }
     .profile-title { font-size: clamp(28px, 5vw, 46px); font-weight: 950; letter-spacing: -.05em; overflow-wrap: anywhere; }
     .aliases, .profile-meta { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 10px; }
@@ -693,8 +705,6 @@
       .my-profile-card { grid-template-columns: 68px 1fr; padding: 15px; align-items: center; }
       .my-profile-avatar { width: 68px; height: 68px; }
       .my-profile-card .my-profile-edit { grid-column: 2; width: auto; justify-self: start; margin-top: -3px; }
-      .profile-actions-stack { grid-column: 1 / -1; width: 100%; display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; }
-      .profile-actions-stack .survey-cta { width: auto; justify-self: auto; }
     }
   </style>
 </head>
@@ -709,21 +719,20 @@
   <path d="M 198 0 L 152 76 L 103 145 L 60 197 L 0 260 L 62 325 L 106 379 L 152 444 L 198 520 L 248 437 L 291 377 L 339 319 L 396 260 L 360 224 L 341 202 L 372 194 L 401 180 L 383 153 L 372 142 L 357 132 L 337 124 L 343 103 L 345 41 L 296 85 L 278 96 L 262 103 L 232 58 Z
            M 198 41 L 224 84 L 258 133 L 276 119 L 305 104 L 322 90 L 322 102 L 316 123 L 303 146 L 309 144 L 329 144 L 340 147 L 355 155 L 370 171 L 361 176 L 340 181 L 311 180 L 288 172 L 322 213 L 366 260 L 320 309 L 274 365 L 235 419 L 200 476 L 197 478 L 169 432 L 123 367 L 79 313 L 29 260 L 78 208 L 119 158 L 161 100 Z"
         fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/>
-  <path d="M 101 246
-           C 108 226, 130 209, 157 202
-           C 177 197, 219 197, 239 202
-           C 267 209, 288 226, 296 246
-           C 300 257, 300 271, 296 282
-           C 291 296, 278 306, 262 310
-           C 247 314, 233 311, 219 307
-           C 205 303, 191 302, 178 304
-           C 166 305, 153 310, 140 311
-           C 122 312, 107 306, 98 295
-           C 88 283, 86 266, 91 253
-           C 93 250, 96 248, 101 246 Z"
-        fill="currentColor"/>
-  <path d="M 116 258 C 120 246, 130 238, 142 238 C 154 238, 163 246, 166 258 Z" fill="#050607"/>
-  <path d="M 230 258 C 233 246, 242 238, 254 238 C 266 238, 276 246, 280 258 Z" fill="#050607"/>
+  <g transform="scale(1.34 1.3710526316)">
+    <path d="M92 161
+             C108 146 129 140 150 140
+             C171 140 192 146 208 161
+             C216 169 219 181 216 192
+             C212 206 199 214 183 215
+             C170 216 161 211 150 211
+             C139 211 130 216 117 215
+             C101 214 88 206 84 192
+             C81 181 84 169 92 161 Z"
+          fill="currentColor"/>
+    <path d="M101 180 C105 169 114 165 123 168 C129 170 133 174 135 180 Z" fill="#050607"/>
+    <path d="M165 180 C167 174 171 170 177 168 C186 165 195 169 199 180 Z" fill="#050607"/>
+  </g>
 </svg>
         </div>
       </div>
@@ -1208,7 +1217,7 @@
     }
 
     function header() {
-      const brandLogo = '<svg viewBox="0 0 402 521" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision"><path d="M 198 0 L 152 76 L 103 145 L 60 197 L 0 260 L 62 325 L 106 379 L 152 444 L 198 520 L 248 437 L 291 377 L 339 319 L 396 260 L 360 224 L 341 202 L 372 194 L 401 180 L 383 153 L 372 142 L 357 132 L 337 124 L 343 103 L 345 41 L 296 85 L 278 96 L 262 103 L 232 58 Z M 198 41 L 224 84 L 258 133 L 276 119 L 305 104 L 322 90 L 322 102 L 316 123 L 303 146 L 309 144 L 329 144 L 340 147 L 355 155 L 370 171 L 361 176 L 340 181 L 311 180 L 288 172 L 322 213 L 366 260 L 320 309 L 274 365 L 235 419 L 200 476 L 197 478 L 169 432 L 123 367 L 79 313 L 29 260 L 78 208 L 119 158 L 161 100 Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/><path d="M 101 246 C 108 226, 130 209, 157 202 C 177 197, 219 197, 239 202 C 267 209, 288 226, 296 246 C 300 257, 300 271, 296 282 C 291 296, 278 306, 262 310 C 247 314, 233 311, 219 307 C 205 303, 191 302, 178 304 C 166 305, 153 310, 140 311 C 122 312, 107 306, 98 295 C 88 283, 86 266, 91 253 C 93 250, 96 248, 101 246 Z" fill="currentColor"/><path d="M 116 258 C 120 246, 130 238, 142 238 C 154 238, 163 246, 166 258 Z" fill="#050607"/><path d="M 230 258 C 233 246, 242 238, 254 238 C 266 238, 276 246, 280 258 Z" fill="#050607"/></svg>';
+      const brandLogo = '<svg viewBox="0 0 402 521" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision"><path d="M 198 0 L 152 76 L 103 145 L 60 197 L 0 260 L 62 325 L 106 379 L 152 444 L 198 520 L 248 437 L 291 377 L 339 319 L 396 260 L 360 224 L 341 202 L 372 194 L 401 180 L 383 153 L 372 142 L 357 132 L 337 124 L 343 103 L 345 41 L 296 85 L 278 96 L 262 103 L 232 58 Z M 198 41 L 224 84 L 258 133 L 276 119 L 305 104 L 322 90 L 322 102 L 316 123 L 303 146 L 309 144 L 329 144 L 340 147 L 355 155 L 370 171 L 361 176 L 340 181 L 311 180 L 288 172 L 322 213 L 366 260 L 320 309 L 274 365 L 235 419 L 200 476 L 197 478 L 169 432 L 123 367 L 79 313 L 29 260 L 78 208 L 119 158 L 161 100 Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/><g transform="scale(1.34 1.3710526316)"><path d="M92 161 C108 146 129 140 150 140 C171 140 192 146 208 161 C216 169 219 181 216 192 C212 206 199 214 183 215 C170 216 161 211 150 211 C139 211 130 216 117 215 C101 214 88 206 84 192 C81 181 84 169 92 161 Z" fill="currentColor"/><path d="M101 180 C105 169 114 165 123 168 C129 170 133 174 135 180 Z" fill="#050607"/><path d="M165 180 C167 174 171 170 177 168 C186 165 195 169 199 180 Z" fill="#050607"/></g></svg>';
       return '<div class="topbar"><div class="brand"><div class="brand-mark">' + brandLogo + '</div><div>Player Tells<small>Private player intel</small></div></div>' +
         '<div class="topbar-actions">' +
           '<button class="top-profile-btn" id="profileBtn" aria-label="My profile">' +
@@ -2355,15 +2364,13 @@
           header() +
           '<button class="back" id="backPlayers">← ' + esc(site.name) + '</button>' +
           '<section class="profile-hero">' +
+            '<button type="button" class="profile-favourite-corner' + (isFollowingPlayer(player.id) ? ' active' : '') + '" id="followPlayerBtn" aria-label="' + (isFollowingPlayer(player.id) ? 'Unfavourite player' : 'Favourite player') + '">' + (isFollowingPlayer(player.id) ? '★' : '☆') + '</button>' +
             avatarHtml({ name: player.name, avatar: player.avatar }, "avatar profile-avatar") +
             '<div><div class="eyebrow">' + esc(site.name) + '</div><div class="profile-title">' + esc(player.name) + '</div>' +
             '<div class="aliases">' + aliasHtml + '</div>' +
             (linkedProfileHtml ? '<div class="linked-profile-row"><span class="linked-profile-label">Linked profiles</span>' + linkedProfileHtml + '</div>' : '') +
             '<div class="profile-meta">' + profileMeta.map(function(x) { return '<span class="meta-chip">' + esc(x) + '</span>'; }).join("") + '</div></div>' +
-            '<div class="profile-actions-stack"><div class="profile-action-top">' +
-              '<button type="button" class="profile-follow-btn' + (isFollowingPlayer(player.id) ? ' active' : '') + '" id="followPlayerBtn">' + (isFollowingPlayer(player.id) ? '★ Following' : '☆ Follow') + '</button>' +
-              (unreadPlayerUpdates(player) ? '<button type="button" class="update-badge" data-update-player="' + esc(player.id) + '">' + unreadPlayerUpdates(player) + '</button>' : '') +
-            '</div><button class="primary survey-cta" id="addSurvey">+ Add survey</button></div>' +
+            '<button class="primary survey-cta" id="addSurvey">+ Add survey</button>' +
           '</section>' +
           '<section class="player-summary">' +
             '<div class="player-summary-head"><strong>Summary</strong><button class="summary-edit" id="editSummaryBtn" type="button">Edit</button></div>' +
@@ -2387,14 +2394,8 @@
       document.getElementById("followPlayerBtn").onclick = function() {
         const following = toggleFollowPlayer(player);
         renderProfile();
-        toast(following ? "Following player" : "Unfollowed player");
+        toast(following ? "Player favourited" : "Player unfavourited");
       };
-      document.querySelectorAll("[data-update-player]").forEach(function(btn) {
-        btn.onclick = function(e) {
-          e.stopPropagation();
-          openPlayerUpdates(player);
-        };
-      });
       document.getElementById("editSummaryBtn").onclick = function() { openEditPlayerSummary(player); };
       document.getElementById("playerHistoryBtn").onclick = function() { openPlayerHistory(player); };
       document.querySelectorAll("[data-linked-player]").forEach(function(btn) {
