@@ -238,6 +238,52 @@
       cursor: pointer; font-size: 11px; font-weight: 800;
     }
     .upload-label input { display: none; }
+
+    .cropper-overlay {
+      position: fixed; inset: 0; z-index: 250; background: #050607; color: #fff;
+      display: grid; grid-template-rows: auto 1fr auto; touch-action: none;
+    }
+    .cropper-topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: max(14px, env(safe-area-inset-top)) 16px 12px; background: rgba(5,6,7,.96);
+    }
+    .cropper-topbar strong { font-size: 14px; }
+    .cropper-text-btn {
+      border: 0; background: transparent; color: #dce2e6; padding: 9px 4px; cursor: pointer;
+      font-size: 13px; font-weight: 750;
+    }
+    .cropper-use {
+      border: 0; border-radius: 12px; background: var(--accent); color: var(--on-accent);
+      padding: 9px 13px; font-weight: 900; cursor: pointer;
+    }
+    .cropper-stage {
+      min-height: 0; position: relative; overflow: hidden; display: grid; place-items: center;
+      background: #050607; user-select: none; -webkit-user-select: none;
+    }
+    .cropper-photo {
+      position: absolute; left: 50%; top: 50%; max-width: none; max-height: none;
+      transform-origin: center center; pointer-events: none; will-change: transform;
+    }
+    .crop-circle {
+      width: min(78vw, 340px); height: min(78vw, 340px); border-radius: 50%;
+      position: relative; z-index: 3; border: 2px solid rgba(255,255,255,.95);
+      box-shadow: 0 0 0 9999px rgba(0,0,0,.62), 0 0 0 1px rgba(0,0,0,.25) inset;
+      pointer-events: none;
+    }
+    .crop-circle::before, .crop-circle::after {
+      content: ""; position: absolute; background: rgba(255,255,255,.28); pointer-events: none;
+    }
+    .crop-circle::before { width: 1px; height: 100%; left: 50%; top: 0; }
+    .crop-circle::after { height: 1px; width: 100%; top: 50%; left: 0; }
+    .cropper-controls {
+      padding: 18px 20px calc(18px + env(safe-area-inset-bottom)); background: rgba(5,6,7,.97);
+    }
+    .cropper-zoom-row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+    .cropper-zoom-row span { font-size: 16px; color: #c7ced3; }
+    .cropper-zoom {
+      width: 100%; accent-color: var(--accent);
+    }
+    .cropper-hint { text-align: center; color: #929ba2; font-size: 11px; margin-top: 10px; }
     .settings-nav { display: grid; gap: 8px; }
     .settings-nav-btn {
       width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -482,9 +528,25 @@
     <div class="loader-wrap">
       <div class="logo-pulse-shell">
         <div class="loader-logo" aria-label="Player Tells">
-          <svg viewBox="0 0 282 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" shape-rendering="geometricPrecision">
-            <path d="M 139 11 L 136 15 L 135 18 L 133 20 L 131 25 L 129 27 L 125 35 L 123 37 L 122 40 L 120 42 L 119 45 L 117 47 L 116 50 L 114 52 L 114 53 L 112 55 L 112 56 L 110 58 L 110 59 L 108 61 L 108 62 L 106 64 L 106 65 L 104 67 L 104 68 L 102 70 L 102 71 L 100 73 L 100 74 L 98 76 L 96 80 L 93 83 L 91 87 L 88 90 L 88 91 L 85 94 L 85 95 L 82 98 L 82 99 L 79 102 L 79 103 L 76 106 L 76 107 L 72 111 L 72 112 L 68 116 L 68 117 L 63 122 L 63 123 L 58 128 L 58 129 L 52 135 L 52 136 L 43 145 L 43 146 L 33 156 L 33 157 L 31 158 L 31 159 L 11 179 L 11 180 L 35 204 L 35 205 L 45 215 L 45 216 L 52 223 L 52 224 L 58 230 L 58 231 L 63 236 L 63 237 L 68 242 L 68 243 L 76 252 L 76 253 L 79 256 L 79 257 L 82 260 L 82 261 L 91 272 L 91 273 L 93 275 L 95 279 L 98 282 L 98 283 L 100 285 L 102 289 L 105 292 L 106 295 L 108 297 L 108 298 L 116 309 L 117 312 L 119 314 L 120 317 L 122 319 L 123 322 L 125 324 L 126 327 L 128 329 L 129 332 L 131 334 L 132 337 L 134 339 L 136 344 L 139 348 L 142 344 L 143 341 L 145 339 L 146 336 L 148 334 L 150 329 L 152 327 L 156 319 L 158 317 L 161 311 L 163 309 L 164 306 L 166 304 L 166 303 L 168 301 L 168 300 L 170 298 L 170 297 L 172 295 L 172 294 L 174 292 L 174 291 L 176 289 L 176 288 L 178 286 L 180 282 L 183 279 L 183 278 L 185 276 L 187 272 L 190 269 L 190 268 L 193 265 L 193 264 L 196 261 L 196 260 L 199 257 L 199 256 L 203 252 L 203 251 L 207 247 L 207 246 L 215 237 L 215 236 L 220 231 L 220 230 L 234 215 L 234 214 L 267 180 L 267 179 L 248 160 L 248 159 L 234 145 L 234 144 L 232 142 L 233 141 L 238 141 L 239 140 L 242 140 L 243 139 L 246 139 L 247 138 L 252 137 L 271 127 L 269 125 L 269 124 L 267 122 L 267 121 L 265 119 L 263 115 L 260 112 L 260 111 L 251 102 L 250 102 L 247 99 L 242 97 L 240 95 L 238 95 L 237 94 L 232 93 L 230 91 L 230 89 L 231 88 L 231 85 L 232 84 L 232 81 L 233 80 L 233 73 L 234 72 L 234 42 L 235 41 L 235 37 L 234 37 L 222 49 L 221 49 L 209 61 L 208 61 L 204 65 L 203 65 L 195 71 L 181 78 L 178 74 L 178 73 L 176 71 L 176 70 L 174 68 L 174 67 L 172 65 L 172 64 L 170 62 L 170 61 L 168 59 L 168 58 L 166 56 L 166 55 L 164 53 L 163 50 L 161 48 L 160 45 L 156 40 L 155 37 L 153 35 L 152 32 L 150 30 L 148 25 L 146 23 L 145 20 L 143 18 L 142 15 Z M 139 38 L 141 40 L 142 43 L 144 45 L 148 53 L 154 61 L 155 64 L 157 66 L 157 67 L 159 69 L 159 70 L 161 72 L 161 73 L 163 75 L 163 76 L 165 78 L 165 79 L 167 81 L 169 85 L 172 88 L 172 89 L 178 97 L 179 97 L 184 92 L 185 92 L 190 88 L 208 79 L 219 70 L 220 71 L 220 75 L 219 76 L 219 79 L 218 80 L 218 84 L 217 85 L 216 90 L 211 100 L 207 105 L 212 105 L 213 104 L 222 104 L 223 105 L 227 105 L 228 106 L 233 107 L 239 110 L 242 113 L 243 113 L 249 119 L 250 121 L 249 123 L 245 125 L 243 125 L 242 126 L 239 126 L 238 127 L 235 127 L 234 128 L 214 128 L 213 127 L 210 127 L 209 126 L 206 126 L 205 125 L 203 125 L 197 122 L 203 129 L 203 130 L 208 135 L 208 136 L 214 142 L 214 143 L 231 161 L 231 162 L 248 179 L 248 180 L 230 198 L 230 199 L 221 208 L 221 209 L 214 216 L 214 217 L 202 230 L 202 231 L 199 234 L 199 235 L 191 244 L 191 245 L 188 248 L 188 249 L 185 252 L 185 253 L 176 264 L 174 268 L 171 271 L 171 272 L 169 274 L 167 278 L 164 281 L 161 287 L 159 289 L 159 290 L 151 301 L 150 304 L 148 306 L 147 309 L 145 311 L 144 314 L 142 316 L 141 319 L 139 321 L 136 317 L 136 316 L 134 314 L 132 309 L 128 304 L 127 301 L 119 290 L 118 287 L 116 285 L 114 281 L 111 278 L 111 277 L 109 275 L 107 271 L 104 268 L 102 264 L 99 261 L 99 260 L 96 257 L 96 256 L 93 253 L 93 252 L 90 249 L 90 248 L 87 245 L 87 244 L 79 235 L 79 234 L 76 231 L 76 230 L 65 218 L 65 217 L 59 211 L 59 210 L 30 180 L 30 179 L 49 160 L 49 159 L 58 150 L 58 149 L 76 129 L 76 128 L 79 125 L 79 124 L 87 115 L 87 114 L 90 111 L 90 110 L 93 107 L 93 106 L 102 95 L 104 91 L 107 88 L 107 87 L 109 85 L 109 84 L 111 82 L 113 78 L 116 75 L 117 72 L 119 70 L 119 69 L 127 58 L 128 55 L 130 53 L 131 50 L 133 48 L 134 45 L 136 43 L 137 40 Z M 69 176 L 69 184 L 72 190 L 72 192 L 74 194 L 76 198 L 81 203 L 82 203 L 84 205 L 90 208 L 92 208 L 93 209 L 96 209 L 97 210 L 113 210 L 114 209 L 117 209 L 121 207 L 125 207 L 126 206 L 134 206 L 135 205 L 141 205 L 142 206 L 151 206 L 152 207 L 155 207 L 156 208 L 158 208 L 159 209 L 163 209 L 164 210 L 179 210 L 180 209 L 184 209 L 194 204 L 202 196 L 203 193 L 205 191 L 205 189 L 207 185 L 207 174 L 206 173 L 206 170 L 203 164 L 201 162 L 201 161 L 195 154 L 194 154 L 188 149 L 180 145 L 178 145 L 175 143 L 172 143 L 171 142 L 168 142 L 167 141 L 162 141 L 161 140 L 156 140 L 155 139 L 122 139 L 121 140 L 115 140 L 114 141 L 109 141 L 108 142 L 105 142 L 104 143 L 102 143 L 101 144 L 96 145 L 90 148 L 85 152 L 84 152 L 76 160 L 76 161 L 74 163 L 71 169 L 71 171 L 70 172 L 70 175 Z M 158 176 L 161 170 L 164 167 L 170 164 L 178 164 L 179 165 L 181 165 L 183 166 L 188 171 L 190 175 L 189 177 L 159 177 Z M 86 175 L 87 174 L 87 172 L 90 169 L 90 168 L 96 164 L 98 164 L 99 163 L 105 163 L 106 164 L 108 164 L 110 165 L 116 171 L 118 175 L 118 177 L 117 178 L 87 178 L 86 177 Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/>
-          </svg>
+          <svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision">
+  <g fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M150 24 L193 92 L219 80 L247 56 L245 101"/>
+    <path d="M238 102 C261 101 280 113 291 132 C273 141 251 144 229 137"/>
+    <path d="M226 138 L272 181 L233 226 L199 276 L150 354 L101 276 L67 226 L28 181 L69 137 L103 95 L128 58 L150 24"/>
+  </g>
+  <path d="M92 161
+           C108 146 129 140 150 140
+           C171 140 192 146 208 161
+           C216 169 219 181 216 192
+           C212 206 199 214 183 215
+           C170 216 161 211 150 211
+           C139 211 130 216 117 215
+           C101 214 88 206 84 192
+           C81 181 84 169 92 161 Z"
+        fill="currentColor"/>
+  <path d="M101 180 C105 169 114 165 123 168 C129 170 133 174 135 180 Z" fill="#050607"/>
+  <path d="M165 180 C167 174 171 170 177 168 C186 165 195 169 199 180 Z" fill="#050607"/>
+</svg>
         </div>
       </div>
       <div class="loader-line"></div>
@@ -738,7 +800,7 @@
     }
 
     function header() {
-      const brandLogo = '<svg viewBox="0 0 282 360" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M 139 11 L 136 15 L 135 18 L 133 20 L 131 25 L 129 27 L 125 35 L 123 37 L 122 40 L 120 42 L 119 45 L 117 47 L 116 50 L 114 52 L 114 53 L 112 55 L 112 56 L 110 58 L 110 59 L 108 61 L 108 62 L 106 64 L 106 65 L 104 67 L 104 68 L 102 70 L 102 71 L 100 73 L 100 74 L 98 76 L 96 80 L 93 83 L 91 87 L 88 90 L 88 91 L 85 94 L 85 95 L 82 98 L 82 99 L 79 102 L 79 103 L 76 106 L 76 107 L 72 111 L 72 112 L 68 116 L 68 117 L 63 122 L 63 123 L 58 128 L 58 129 L 52 135 L 52 136 L 43 145 L 43 146 L 33 156 L 33 157 L 31 158 L 31 159 L 11 179 L 11 180 L 35 204 L 35 205 L 45 215 L 45 216 L 52 223 L 52 224 L 58 230 L 58 231 L 63 236 L 63 237 L 68 242 L 68 243 L 76 252 L 76 253 L 79 256 L 79 257 L 82 260 L 82 261 L 91 272 L 91 273 L 93 275 L 95 279 L 98 282 L 98 283 L 100 285 L 102 289 L 105 292 L 106 295 L 108 297 L 108 298 L 116 309 L 117 312 L 119 314 L 120 317 L 122 319 L 123 322 L 125 324 L 126 327 L 128 329 L 129 332 L 131 334 L 132 337 L 134 339 L 136 344 L 139 348 L 142 344 L 143 341 L 145 339 L 146 336 L 148 334 L 150 329 L 152 327 L 156 319 L 158 317 L 161 311 L 163 309 L 164 306 L 166 304 L 166 303 L 168 301 L 168 300 L 170 298 L 170 297 L 172 295 L 172 294 L 174 292 L 174 291 L 176 289 L 176 288 L 178 286 L 180 282 L 183 279 L 183 278 L 185 276 L 187 272 L 190 269 L 190 268 L 193 265 L 193 264 L 196 261 L 196 260 L 199 257 L 199 256 L 203 252 L 203 251 L 207 247 L 207 246 L 215 237 L 215 236 L 220 231 L 220 230 L 234 215 L 234 214 L 267 180 L 267 179 L 248 160 L 248 159 L 234 145 L 234 144 L 232 142 L 233 141 L 238 141 L 239 140 L 242 140 L 243 139 L 246 139 L 247 138 L 252 137 L 271 127 L 269 125 L 269 124 L 267 122 L 267 121 L 265 119 L 263 115 L 260 112 L 260 111 L 251 102 L 250 102 L 247 99 L 242 97 L 240 95 L 238 95 L 237 94 L 232 93 L 230 91 L 230 89 L 231 88 L 231 85 L 232 84 L 232 81 L 233 80 L 233 73 L 234 72 L 234 42 L 235 41 L 235 37 L 234 37 L 222 49 L 221 49 L 209 61 L 208 61 L 204 65 L 203 65 L 195 71 L 181 78 L 178 74 L 178 73 L 176 71 L 176 70 L 174 68 L 174 67 L 172 65 L 172 64 L 170 62 L 170 61 L 168 59 L 168 58 L 166 56 L 166 55 L 164 53 L 163 50 L 161 48 L 160 45 L 156 40 L 155 37 L 153 35 L 152 32 L 150 30 L 148 25 L 146 23 L 145 20 L 143 18 L 142 15 Z M 139 38 L 141 40 L 142 43 L 144 45 L 148 53 L 154 61 L 155 64 L 157 66 L 157 67 L 159 69 L 159 70 L 161 72 L 161 73 L 163 75 L 163 76 L 165 78 L 165 79 L 167 81 L 169 85 L 172 88 L 172 89 L 178 97 L 179 97 L 184 92 L 185 92 L 190 88 L 208 79 L 219 70 L 220 71 L 220 75 L 219 76 L 219 79 L 218 80 L 218 84 L 217 85 L 216 90 L 211 100 L 207 105 L 212 105 L 213 104 L 222 104 L 223 105 L 227 105 L 228 106 L 233 107 L 239 110 L 242 113 L 243 113 L 249 119 L 250 121 L 249 123 L 245 125 L 243 125 L 242 126 L 239 126 L 238 127 L 235 127 L 234 128 L 214 128 L 213 127 L 210 127 L 209 126 L 206 126 L 205 125 L 203 125 L 197 122 L 203 129 L 203 130 L 208 135 L 208 136 L 214 142 L 214 143 L 231 161 L 231 162 L 248 179 L 248 180 L 230 198 L 230 199 L 221 208 L 221 209 L 214 216 L 214 217 L 202 230 L 202 231 L 199 234 L 199 235 L 191 244 L 191 245 L 188 248 L 188 249 L 185 252 L 185 253 L 176 264 L 174 268 L 171 271 L 171 272 L 169 274 L 167 278 L 164 281 L 161 287 L 159 289 L 159 290 L 151 301 L 150 304 L 148 306 L 147 309 L 145 311 L 144 314 L 142 316 L 141 319 L 139 321 L 136 317 L 136 316 L 134 314 L 132 309 L 128 304 L 127 301 L 119 290 L 118 287 L 116 285 L 114 281 L 111 278 L 111 277 L 109 275 L 107 271 L 104 268 L 102 264 L 99 261 L 99 260 L 96 257 L 96 256 L 93 253 L 93 252 L 90 249 L 90 248 L 87 245 L 87 244 L 79 235 L 79 234 L 76 231 L 76 230 L 65 218 L 65 217 L 59 211 L 59 210 L 30 180 L 30 179 L 49 160 L 49 159 L 58 150 L 58 149 L 76 129 L 76 128 L 79 125 L 79 124 L 87 115 L 87 114 L 90 111 L 90 110 L 93 107 L 93 106 L 102 95 L 104 91 L 107 88 L 107 87 L 109 85 L 109 84 L 111 82 L 113 78 L 116 75 L 117 72 L 119 70 L 119 69 L 127 58 L 128 55 L 130 53 L 131 50 L 133 48 L 134 45 L 136 43 L 137 40 Z M 69 176 L 69 184 L 72 190 L 72 192 L 74 194 L 76 198 L 81 203 L 82 203 L 84 205 L 90 208 L 92 208 L 93 209 L 96 209 L 97 210 L 113 210 L 114 209 L 117 209 L 121 207 L 125 207 L 126 206 L 134 206 L 135 205 L 141 205 L 142 206 L 151 206 L 152 207 L 155 207 L 156 208 L 158 208 L 159 209 L 163 209 L 164 210 L 179 210 L 180 209 L 184 209 L 194 204 L 202 196 L 203 193 L 205 191 L 205 189 L 207 185 L 207 174 L 206 173 L 206 170 L 203 164 L 201 162 L 201 161 L 195 154 L 194 154 L 188 149 L 180 145 L 178 145 L 175 143 L 172 143 L 171 142 L 168 142 L 167 141 L 162 141 L 161 140 L 156 140 L 155 139 L 122 139 L 121 140 L 115 140 L 114 141 L 109 141 L 108 142 L 105 142 L 104 143 L 102 143 L 101 144 L 96 145 L 90 148 L 85 152 L 84 152 L 76 160 L 76 161 L 74 163 L 71 169 L 71 171 L 70 172 L 70 175 Z M 158 176 L 161 170 L 164 167 L 170 164 L 178 164 L 179 165 L 181 165 L 183 166 L 188 171 L 190 175 L 189 177 L 159 177 Z M 86 175 L 87 174 L 87 172 L 90 169 L 90 168 L 96 164 L 98 164 L 99 163 L 105 163 L 106 164 L 108 164 L 110 165 L 116 171 L 118 175 L 118 177 L 117 178 L 87 178 L 86 177 Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/></svg>';
+      const brandLogo = '<svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision"><g fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"><path d="M150 24 L193 92 L219 80 L247 56 L245 101"/><path d="M238 102 C261 101 280 113 291 132 C273 141 251 144 229 137"/><path d="M226 138 L272 181 L233 226 L199 276 L150 354 L101 276 L67 226 L28 181 L69 137 L103 95 L128 58 L150 24"/></g><path d="M92 161C108 146 129 140 150 140C171 140 192 146 208 161C216 169 219 181 216 192C212 206 199 214 183 215C170 216 161 211 150 211C139 211 130 216 117 215C101 214 88 206 84 192C81 181 84 169 92 161 Z"fill="currentColor"/><path d="M101 180 C105 169 114 165 123 168 C129 170 133 174 135 180 Z" fill="#050607"/><path d="M165 180 C167 174 171 170 177 168 C186 165 195 169 199 180 Z" fill="#050607"/></svg>';
       return '<div class="topbar"><div class="brand"><div class="brand-mark">' + brandLogo + '</div><div>Player Tells<small>Private player intel</small></div></div>' +
         '<div class="topbar-actions">' +
           '<button class="top-profile-btn" id="profileBtn" aria-label="My profile">' +
@@ -1400,22 +1462,130 @@
       drawEditPlayers("");
     }
 
-    function resizeImageFile(file, callback) {
-      if (!file || !file.type || !file.type.startsWith("image/")) return callback("");
+    function openImageCropper(file, callback) {
+      if (!file || !file.type || !file.type.startsWith("image/")) return;
+
       const reader = new FileReader();
       reader.onload = function(event) {
-        const img = new Image();
-        img.onload = function() {
-          const size = 360;
-          const canvas = document.createElement("canvas");
-          canvas.width = size; canvas.height = size;
-          const ctx = canvas.getContext("2d");
-          const scale = Math.max(size / img.width, size / img.height);
-          const w = img.width * scale, h = img.height * scale;
-          ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
-          callback(canvas.toDataURL("image/jpeg", .82));
+        const source = new Image();
+        source.onload = function() {
+          const overlay = document.createElement("div");
+          overlay.className = "cropper-overlay";
+          overlay.innerHTML =
+            '<div class="cropper-topbar">' +
+              '<button class="cropper-text-btn" id="cropCancel" type="button">Cancel</button>' +
+              '<strong>Adjust photo</strong>' +
+              '<button class="cropper-use" id="cropUse" type="button">Use photo</button>' +
+            '</div>' +
+            '<div class="cropper-stage" id="cropStage">' +
+              '<img class="cropper-photo" id="cropPhoto" alt="">' +
+              '<div class="crop-circle" id="cropCircle"></div>' +
+            '</div>' +
+            '<div class="cropper-controls">' +
+              '<div class="cropper-zoom-row"><span>−</span><input class="cropper-zoom" id="cropZoom" type="range" min="100" max="320" value="100"><span>+</span></div>' +
+              '<div class="cropper-hint">Drag to reposition · use the slider to zoom</div>' +
+            '</div>';
+
+          document.body.appendChild(overlay);
+
+          const stage = document.getElementById("cropStage");
+          const photo = document.getElementById("cropPhoto");
+          const circle = document.getElementById("cropCircle");
+          const zoomInput = document.getElementById("cropZoom");
+          photo.src = event.target.result;
+
+          let baseScale = 1;
+          let zoom = 1;
+          let offsetX = 0;
+          let offsetY = 0;
+          let baseWidth = 0;
+          let baseHeight = 0;
+          let cropSize = 0;
+          let dragging = false;
+          let startX = 0, startY = 0, startOffsetX = 0, startOffsetY = 0;
+
+          function clampOffsets() {
+            const displayedW = baseWidth * zoom;
+            const displayedH = baseHeight * zoom;
+            const maxX = Math.max(0, (displayedW - cropSize) / 2);
+            const maxY = Math.max(0, (displayedH - cropSize) / 2);
+            offsetX = Math.max(-maxX, Math.min(maxX, offsetX));
+            offsetY = Math.max(-maxY, Math.min(maxY, offsetY));
+          }
+
+          function renderCrop() {
+            clampOffsets();
+            photo.style.width = baseWidth + "px";
+            photo.style.height = baseHeight + "px";
+            photo.style.transform = "translate(-50%, -50%) translate(" + offsetX + "px," + offsetY + "px) scale(" + zoom + ")";
+          }
+
+          function setup() {
+            cropSize = circle.getBoundingClientRect().width;
+            baseScale = Math.max(cropSize / source.naturalWidth, cropSize / source.naturalHeight);
+            baseWidth = source.naturalWidth * baseScale;
+            baseHeight = source.naturalHeight * baseScale;
+            renderCrop();
+          }
+
+          requestAnimationFrame(setup);
+
+          zoomInput.addEventListener("input", function() {
+            zoom = Number(zoomInput.value) / 100;
+            renderCrop();
+          });
+
+          stage.addEventListener("pointerdown", function(e) {
+            dragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startOffsetX = offsetX;
+            startOffsetY = offsetY;
+            stage.setPointerCapture(e.pointerId);
+          });
+          stage.addEventListener("pointermove", function(e) {
+            if (!dragging) return;
+            offsetX = startOffsetX + (e.clientX - startX);
+            offsetY = startOffsetY + (e.clientY - startY);
+            renderCrop();
+          });
+          stage.addEventListener("pointerup", function(e) {
+            dragging = false;
+            try { stage.releasePointerCapture(e.pointerId); } catch (_) {}
+          });
+          stage.addEventListener("pointercancel", function() { dragging = false; });
+
+          document.getElementById("cropCancel").onclick = function() {
+            overlay.remove();
+          };
+
+          document.getElementById("cropUse").onclick = function() {
+            clampOffsets();
+            const effectiveScale = baseScale * zoom;
+            const displayedW = source.naturalWidth * effectiveScale;
+            const displayedH = source.naturalHeight * effectiveScale;
+            const cropLeftDisplayed = displayedW / 2 - offsetX - cropSize / 2;
+            const cropTopDisplayed = displayedH / 2 - offsetY - cropSize / 2;
+            const sourceX = cropLeftDisplayed / effectiveScale;
+            const sourceY = cropTopDisplayed / effectiveScale;
+            const sourceSize = cropSize / effectiveScale;
+
+            const canvas = document.createElement("canvas");
+            canvas.width = 420;
+            canvas.height = 420;
+            const ctx = canvas.getContext("2d");
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+            ctx.drawImage(source, sourceX, sourceY, sourceSize, sourceSize, 0, 0, 420, 420);
+
+            const result = canvas.toDataURL("image/jpeg", .88);
+            overlay.remove();
+            callback(result);
+          };
+
+          window.addEventListener("resize", setup, { once: true });
         };
-        img.src = event.target.result;
+        source.src = event.target.result;
       };
       reader.readAsDataURL(file);
     }
@@ -1439,10 +1609,11 @@
       if (input) input.onchange = function() {
         const file = input.files && input.files[0];
         if (!file) return;
-        resizeImageFile(file, function(dataUrl) {
+        openImageCropper(file, function(dataUrl) {
           value = dataUrl;
           document.getElementById("imageEditPreview").innerHTML = '<img src="' + esc(dataUrl) + '" alt="">';
           onChange(value);
+          input.value = "";
         });
       };
       if (remove) remove.onclick = function() {
