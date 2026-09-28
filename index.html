@@ -67,49 +67,8 @@
     #loading.hide { opacity: 0; visibility: hidden; }
     .loader-wrap { display: grid; gap: 30px; justify-items: center; }
     .logo-pulse-shell {
-      width: min(100vw, 1100px); height: min(72vh, 760px); position: relative;
-      display: grid; place-items: center; isolation: isolate; overflow: visible;
-    }
-    .logo-echo {
-      --echo-scale: 1.6;
-      --echo-opacity: .22;
-      position: absolute; width: 171px; height: 220px; display: grid; place-items: center;
-      color: rgba(255,255,255,.56); z-index: -1; pointer-events: none; opacity: 0;
-      transform-origin: center center; will-change: transform, opacity, filter;
-      animation: logo-echo-wave 1.55s cubic-bezier(.12,.72,.18,1) infinite;
-    }
-    .logo-echo.echo-1 { --echo-scale: 1.45; --echo-opacity: .24; --echo-mid: .19; --echo-fade: .11; --echo-tail: .04; animation-delay: 0s; }
-    .logo-echo.echo-2 { --echo-scale: 1.78; --echo-opacity: .20; --echo-mid: .16; --echo-fade: .09; --echo-tail: .03; animation-delay: .13s; }
-    .logo-echo.echo-3 { --echo-scale: 2.10; --echo-opacity: .16; --echo-mid: .13; --echo-fade: .07; --echo-tail: .025; animation-delay: .26s; }
-    .logo-echo.echo-4 { --echo-scale: 2.45; --echo-opacity: .12; --echo-mid: .095; --echo-fade: .05; --echo-tail: .018; animation-delay: .39s; }
-    .logo-echo.echo-5 { --echo-scale: 2.90; --echo-opacity: .09; --echo-mid: .07; --echo-fade: .035; --echo-tail: .012; animation-delay: .52s; }
-    .logo-echo svg {
-      width: 100%; height: 100%; display: block; overflow: visible;
-      shape-rendering: geometricPrecision;
-      filter: drop-shadow(0 0 5px rgba(255,255,255,.05));
-    }
-    .logo-echo svg g,
-    .logo-echo svg path {
-      fill: none !important;
-      stroke: currentColor !important;
-      stroke-width: 2.7 !important;
-      stroke-linecap: round !important;
-      stroke-linejoin: round !important;
-      vector-effect: non-scaling-stroke;
-    }
-    @media (min-width: 600px) {
-      .logo-echo.echo-1 { --echo-scale: 1.55; }
-      .logo-echo.echo-2 { --echo-scale: 2.05; }
-      .logo-echo.echo-3 { --echo-scale: 2.65; }
-      .logo-echo.echo-4 { --echo-scale: 3.25; }
-      .logo-echo.echo-5 { --echo-scale: 3.85; }
-    }
-    @media (min-width: 900px) {
-      .logo-echo.echo-1 { --echo-scale: 1.65; }
-      .logo-echo.echo-2 { --echo-scale: 2.30; }
-      .logo-echo.echo-3 { --echo-scale: 3.10; }
-      .logo-echo.echo-4 { --echo-scale: 3.90; }
-      .logo-echo.echo-5 { --echo-scale: 4.70; }
+      width: 210px; height: 270px; position: relative;
+      display: grid; place-items: center;
     }
     .loader-logo {
       width: 171px; height: 220px; display: grid; place-items: center;
@@ -131,29 +90,19 @@
       box-shadow: 0 0 10px rgba(255,255,255,.34);
     }
     @keyframes hypnotic-logo {
-      0% { transform: scale(.94); opacity: .55; filter: brightness(.72) blur(.15px) drop-shadow(0 0 2px rgba(255,255,255,.08)); }
-      55% { opacity: .88; }
-      100% { transform: scale(1.045); opacity: 1; filter: brightness(1.2) blur(0) drop-shadow(0 0 17px rgba(255,255,255,.28)); }
-    }
-    @keyframes logo-echo-wave {
       0% {
-        transform: scale(.98);
-        opacity: var(--echo-opacity);
-        filter: blur(0);
+        transform: scale(.96);
+        opacity: .72;
+        filter: brightness(.82) drop-shadow(0 0 4px rgba(255,255,255,.10));
       }
-      26% {
-        opacity: var(--echo-mid);
-      }
-      58% {
-        opacity: var(--echo-fade);
-      }
-      82% {
-        opacity: var(--echo-tail);
+      50% {
+        opacity: .9;
+        filter: brightness(1) drop-shadow(0 0 14px rgba(255,255,255,.20));
       }
       100% {
-        transform: scale(var(--echo-scale));
-        opacity: 0;
-        filter: blur(.45px);
+        transform: scale(1.05);
+        opacity: 1;
+        filter: brightness(1.28) drop-shadow(0 0 30px rgba(255,255,255,.42));
       }
     }
     @keyframes loader-progress {
@@ -701,41 +650,6 @@
   <div id="loading">
     <div class="loader-wrap">
       <div class="logo-pulse-shell">
-        <div class="logo-echo echo-1" aria-hidden="true"><svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision">
-  <g fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M150 24 L193 92 L219 80 L247 56 L245 101"/>
-    <path d="M238 102 C261 101 280 113 291 132 C273 141 251 144 229 137"/>
-    <path d="M226 138 L272 181 L233 226 L199 276 L150 354 L101 276 L67 226 L28 181 L69 137 L103 95 L128 58 L150 24"/>
-  </g>
-</svg></div>
-        <div class="logo-echo echo-2" aria-hidden="true"><svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision">
-  <g fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M150 24 L193 92 L219 80 L247 56 L245 101"/>
-    <path d="M238 102 C261 101 280 113 291 132 C273 141 251 144 229 137"/>
-    <path d="M226 138 L272 181 L233 226 L199 276 L150 354 L101 276 L67 226 L28 181 L69 137 L103 95 L128 58 L150 24"/>
-  </g>
-</svg></div>
-        <div class="logo-echo echo-3" aria-hidden="true"><svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision">
-  <g fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M150 24 L193 92 L219 80 L247 56 L245 101"/>
-    <path d="M238 102 C261 101 280 113 291 132 C273 141 251 144 229 137"/>
-    <path d="M226 138 L272 181 L233 226 L199 276 L150 354 L101 276 L67 226 L28 181 L69 137 L103 95 L128 58 L150 24"/>
-  </g>
-</svg></div>
-        <div class="logo-echo echo-4" aria-hidden="true"><svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision">
-  <g fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M150 24 L193 92 L219 80 L247 56 L245 101"/>
-    <path d="M238 102 C261 101 280 113 291 132 C273 141 251 144 229 137"/>
-    <path d="M226 138 L272 181 L233 226 L199 276 L150 354 L101 276 L67 226 L28 181 L69 137 L103 95 L128 58 L150 24"/>
-  </g>
-</svg></div>
-        <div class="logo-echo echo-5" aria-hidden="true"><svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision">
-  <g fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M150 24 L193 92 L219 80 L247 56 L245 101"/>
-    <path d="M238 102 C261 101 280 113 291 132 C273 141 251 144 229 137"/>
-    <path d="M226 138 L272 181 L233 226 L199 276 L150 354 L101 276 L67 226 L28 181 L69 137 L103 95 L128 58 L150 24"/>
-  </g>
-</svg></div>
         <div class="loader-logo" aria-label="Player Tells">
           <svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision">
   <g fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
