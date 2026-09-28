@@ -931,7 +931,7 @@
         const size = wheel.clientWidth;
         const radius = size / 2;
         const distance = picker.s * radius * .92;
-        const angle = (picker.h - 90) * Math.PI / 180;
+        const angle = picker.h * Math.PI / 180;
         cursor.style.left = (radius + Math.cos(angle) * distance) + "px";
         cursor.style.top = (radius + Math.sin(angle) * distance) + "px";
       }
@@ -959,7 +959,7 @@
         const radius = rect.width / 2;
         const dist = Math.min(Math.sqrt(dx * dx + dy * dy), radius * .92);
         picker.s = Math.max(0, Math.min(1, dist / (radius * .92)));
-        picker.h = (Math.atan2(dy, dx) * 180 / Math.PI + 450) % 360;
+        picker.h = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
         updateColour();
       }
 
