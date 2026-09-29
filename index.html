@@ -400,6 +400,23 @@
       overflow: hidden;
       box-shadow: 0 8px 24px rgba(0,0,0,.06);
       transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+      position: relative;
+    }
+    .profile-collapsible::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 14px; bottom: 14px;
+      width: 3px;
+      border-radius: 0 999px 999px 0;
+      background: var(--accent);
+      opacity: .72;
+      box-shadow: 0 0 10px rgba(var(--accent-rgb),.16);
+      transition: opacity .16s ease, box-shadow .16s ease;
+      z-index: 2;
+    }
+    .profile-collapsible[open]::before {
+      opacity: 1;
+      box-shadow: 0 0 14px rgba(var(--accent-rgb),.28);
     }
     .profile-collapsible[open] {
       border-color: rgba(var(--accent-rgb),.28);
