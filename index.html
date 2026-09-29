@@ -762,15 +762,14 @@
       display: grid; grid-template-columns: 24px 1fr; align-items: center; gap: 6px;
       border: 1px solid var(--line); background: var(--field); border-radius: 9px;
       padding: 6px 7px; color: var(--muted); font-size: 8px; line-height: 1.15;
-      cursor: pointer;
+      cursor: pointer; text-align: left;
     }
-    .comparison-colour-choice input[type="color"] {
-      width: 24px; height: 24px; padding: 0; border: 0; border-radius: 6px;
-      background: transparent; cursor: pointer; overflow: hidden;
+    .comparison-colour-choice:hover { border-color: rgba(var(--accent-rgb),.30); }
+    .comparison-colour-swatch {
+      width: 24px; height: 24px; border-radius: 6px;
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
     }
-    .comparison-colour-choice input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-    .comparison-colour-choice input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 6px; }
-    .comparison-colour-choice input[type="color"]::-moz-color-swatch { border: 0; border-radius: 6px; }
 
     .player-summary {
       margin-top: 18px;
@@ -2031,9 +2030,9 @@
           '<div class="difference-setting"><input id="differenceThreshold" type="range" min="1" max="9" step="1" value="' + esc(settings.differenceThreshold) + '">' +
           '<span class="difference-setting-value" id="differenceThresholdValue">' + esc(settings.differenceThreshold) + '+ pts</span></div>' +
           '<div class="comparison-colour-grid">' +
-            '<label class="comparison-colour-choice"><input id="meCompareColour" type="color" value="' + esc(settings.meColor) + '"><span>Me</span></label>' +
-            '<label class="comparison-colour-choice"><input id="otherCompareColour" type="color" value="' + esc(settings.otherColor) + '"><span>Other</span></label>' +
-            '<label class="comparison-colour-choice"><input id="highlightCompareColour" type="color" value="' + esc(settings.highlightColor) + '"><span>Highlight</span></label>' +
+            '<button class="comparison-colour-choice" id="meCompareColour" type="button"><span class="comparison-colour-swatch" style="background:' + esc(settings.meColor) + '"></span><span>Me</span></button>' +
+            '<button class="comparison-colour-choice" id="otherCompareColour" type="button"><span class="comparison-colour-swatch" style="background:' + esc(settings.otherColor) + '"></span><span>Other</span></button>' +
+            '<button class="comparison-colour-choice" id="highlightCompareColour" type="button"><span class="comparison-colour-swatch" style="background:' + esc(settings.highlightColor) + '"></span><span>Highlight</span></button>' +
           '</div></div>' +
         '<div class="setting-row"><div class="setting-title">Manage</div><div class="settings-nav">' +
           '<button class="settings-nav-btn" id="editPlayersBtn"><span><strong>Edit players</strong><small>Names, aliases and profile pictures</small></span><span>›</span></button>' +
@@ -2050,7 +2049,9 @@
         };
       });
 
-      document.getElementById("changeHue").onclick = openColourPicker;
+      document.getElementById("changeHue").onclick = function() {
+        openColourPicker("accent", "Accent colour", "#c7ff3a");
+      };
       const differenceThreshold = document.getElementById("differenceThreshold");
       if (differenceThreshold) {
         differenceThreshold.oninput = function() {
@@ -2060,19 +2061,18 @@
         };
       }
 
-      [
-        ["meCompareColour", "meColor"],
-        ["otherCompareColour", "otherColor"],
-        ["highlightCompareColour", "highlightColor"]
-      ].forEach(function(pair) {
-        const input = document.getElementById(pair[0]);
-        if (!input) return;
-        input.oninput = function() {
-          settings[pair[1]] = input.value;
-          saveSettings();
-          applySettings();
-        };
-      });
+      const meCompareColour = document.getElementById("meCompareColour");
+      const otherCompareColour = document.getElementById("otherCompareColour");
+      const highlightCompareColour = document.getElementById("highlightCompareColour");
+      if (meCompareColour) meCompareColour.onclick = function() {
+        openColourPicker("meColor", "Me colour", "#ff4766");
+      };
+      if (otherCompareColour) otherCompareColour.onclick = function() {
+        openColourPicker("otherColor", "Other user colour", "#22c7d6");
+      };
+      if (highlightCompareColour) highlightCompareColour.onclick = function() {
+        openColourPicker("highlightColor", "Box highlight colour", "#f0a13a");
+      };
 
       document.getElementById("editPlayersBtn").onclick = function() {
         closeModal();
@@ -2084,25 +2084,29 @@
       };
     }
 
-    function openColourPicker() {
-      const rgb = hexToRgb(settings.accent);
+    function openColourPicker(settingKey, pickerTitle, defaultHex) {
+      const key = settingKey || "accent";
+      const title = pickerTitle || "Accent colour";
+      const fallback = defaultHex || "#c7ff3a";
+      const currentHex = /^#[0-9a-f]{6}$/i.test(settings[key] || "") ? settings[key] : fallback;
+      const rgb = hexToRgb(currentHex);
       const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
       let picker = { h: hsv.h, s: hsv.s, v: hsv.v };
       const recents = (settings.recentColors || []).slice(0, 8);
 
       openModal(
-        '<div class="modal-head"><div><div class="eyebrow">Accent colour</div><h3>Choose a hue</h3></div><button class="modal-close" data-close>×</button></div>' +
+        '<div class="modal-head"><div><div class="eyebrow">' + esc(title) + '</div><h3>Choose a hue</h3></div><button class="modal-close" data-close>×</button></div>' +
         '<div class="colour-picker-panel">' +
           '<div class="colour-wheel-wrap"><div class="colour-wheel" id="colourWheel"><span class="wheel-cursor" id="wheelCursor"></span></div></div>' +
           '<div class="brightness-wrap">' +
-            '<div class="brightness-head"><span class="setting-title" style="margin:0">Brightness</span><span class="hex-readout" id="hexReadout">' + esc(settings.accent.toUpperCase()) + '</span></div>' +
+            '<div class="brightness-head"><span class="setting-title" style="margin:0">Brightness</span><span class="hex-readout" id="hexReadout">' + esc(currentHex.toUpperCase()) + '</span></div>' +
             '<input class="brightness-slider" id="brightnessSlider" type="range" min="15" max="100" value="' + Math.round(picker.v * 100) + '">' +
           '</div>' +
           '<div class="picker-preview-row"><div class="picker-current"><span class="picker-swatch" id="pickerSwatch"></span><span class="tiny">Live preview</span></div>' +
             '<button class="primary" id="doneColour" type="button">Done</button></div>' +
           '<div><div class="setting-title">Recent colours</div><div class="recent-colours">' +
             (recents.length ? recents.map(function(c) {
-              return '<button class="recent-swatch' + (c.toLowerCase() === settings.accent.toLowerCase() ? ' active' : '') + '" data-recent-colour="' + esc(c) + '" style="background:' + esc(c) + '" aria-label="' + esc(c) + '"></button>';
+              return '<button class="recent-swatch' + (c.toLowerCase() === currentHex.toLowerCase() ? ' active' : '') + '" data-recent-colour="' + esc(c) + '" style="background:' + esc(c) + '" aria-label="' + esc(c) + '"></button>';
             }).join("") : '<span class="recent-empty">Your recent colours will appear here.</span>') +
           '</div></div>' +
           '<button class="text-btn" id="resetAccent" type="button">Reset to default</button>' +
@@ -2126,7 +2130,7 @@
 
       function updateColour() {
         const hex = hsvToHex(picker.h, picker.s, picker.v);
-        settings.accent = hex;
+        settings[key] = hex;
         saveSettings();
         applySettings();
         swatch.style.background = hex;
@@ -2182,21 +2186,20 @@
       });
 
       document.getElementById("resetAccent").onclick = function() {
-        const def = hexToRgb("#c7ff3a");
+        const def = hexToRgb(fallback);
         picker = rgbToHsv(def.r, def.g, def.b);
         slider.value = Math.round(picker.v * 100);
         updateColour();
       };
 
       document.getElementById("doneColour").onclick = function() {
-        rememberColour(settings.accent);
+        rememberColour(settings[key]);
         closeModal();
         openSettings();
       };
 
       updateColour();
     }
-
 
     function authorIsCurrent(author) {
       return !!author && author.id === currentUser.id;
