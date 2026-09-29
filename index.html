@@ -373,8 +373,8 @@
     .my-profile-shell .back { margin-top: 2px; }
     .my-profile-card {
       margin-top: 12px; border: 1px solid var(--line); background: var(--panel); border-radius: 22px;
-      padding: 18px 20px; display: grid; grid-template-columns: 104px 1fr auto; align-items: center;
-      gap: 22px; box-shadow: var(--shadow);
+      padding: 18px 20px; display: grid; grid-template-columns: 104px 1fr; align-items: center;
+      gap: 22px; box-shadow: var(--shadow); position: relative;
     }
     .my-profile-avatar { width: 104px; height: 104px; font-size: 21px; }
     .my-profile-info { min-width: 0; }
@@ -386,7 +386,10 @@
     .profile-stat strong { display: inline; font-size: 16px; }
     .profile-stat span { color: var(--muted); font-size: 10px; }
     .my-profile-edit {
-      padding: 8px 11px; border-radius: 11px; font-size: 10px; white-space: nowrap;
+      position: absolute; top: 14px; right: 14px;
+      padding: 6px 9px; border-radius: 9px; font-size: 9px; white-space: nowrap;
+      background: rgba(var(--accent-rgb),.08); color: var(--accent);
+      border-color: rgba(var(--accent-rgb),.24); box-shadow: none;
     }
     .history-section { margin-top: 22px; }
     .history-list { display: grid; gap: 7px; }
@@ -708,7 +711,7 @@
       .edit-site-grid { grid-template-columns: 1fr; }
       .my-profile-card { grid-template-columns: 112px 1fr; padding: 17px 18px; gap: 24px; align-items: center; }
       .my-profile-avatar { width: 112px; height: 112px; font-size: 22px; }
-      .my-profile-card .my-profile-edit { grid-column: 2; width: auto; justify-self: start; margin-top: -2px; }
+      .my-profile-card .my-profile-edit { top: 13px; right: 13px; width: auto; margin: 0; }
     }
   </style>
 </head>
