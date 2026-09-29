@@ -539,20 +539,25 @@
     }
     .trait-card:hover { border-color: rgba(var(--accent-rgb),.36); }
     .trait-card.compare-alert {
-      border: 2px solid rgba(255,164,44,.96);
+      border: 3px solid #f0a13a;
       box-shadow:
-        0 0 0 2px rgba(255,164,44,.14),
-        0 0 24px rgba(255,164,44,.20),
-        0 14px 34px rgba(255,164,44,.12);
+        0 0 0 3px rgba(240,161,58,.14),
+        0 0 30px rgba(240,161,58,.26),
+        0 16px 38px rgba(240,161,58,.16);
       background:
-        linear-gradient(rgba(255,164,44,.045), rgba(255,164,44,.045)),
+        linear-gradient(rgba(240,161,58,.085), rgba(240,161,58,.085)),
         var(--panel);
+    }
+    .trait-card.compare-alert .trait-labels strong {
+      text-shadow: 0 0 14px rgba(240,161,58,.18);
     }
     .trait-difference-badge {
       display: inline-flex; align-items: center; gap: 4px;
-      margin-right: auto; padding: 3px 6px;
-      border-radius: 999px; background: rgba(255,164,44,.12);
-      color: #f0a13a; font-size: 9px; font-weight: 900;
+      margin-right: auto; padding: 4px 7px;
+      border: 1px solid rgba(240,161,58,.52);
+      border-radius: 999px; background: rgba(240,161,58,.18);
+      color: #e89425; font-size: 9px; font-weight: 950;
+      box-shadow: 0 0 12px rgba(240,161,58,.12);
     }
     .trait-labels { display: flex; justify-content: space-between; gap: 14px; color: var(--text); font-size: 13px; }
     .trait-labels strong { font-weight: 780; }
