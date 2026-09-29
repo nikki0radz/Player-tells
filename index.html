@@ -1052,6 +1052,50 @@
       };
     }
 
+    function routeTrail(nextRoute) {
+      const target = routeSnapshot(nextRoute);
+      const home = { screen: "sites", siteId: null, playerId: null };
+
+      if (target.screen === "profile" && target.siteId && target.playerId) {
+        return [
+          home,
+          { screen: "players", siteId: target.siteId, playerId: null },
+          target
+        ];
+      }
+
+      if (target.screen === "players" && target.siteId) {
+        return [home, target];
+      }
+
+      if (target.screen === "myProfile" || target.screen === "editPlayers" || target.screen === "editSites") {
+        return [home, target];
+      }
+
+      return [target];
+    }
+
+    function seedBrowserHistoryForRoute(nextRoute) {
+      const trail = routeTrail(nextRoute);
+      const finalRoute = trail[trail.length - 1];
+
+      history.replaceState({
+        playerTells: true,
+        route: routeSnapshot(trail[0]),
+        depth: 0
+      }, "", window.location.href);
+
+      for (let i = 1; i < trail.length; i++) {
+        history.pushState({
+          playerTells: true,
+          route: routeSnapshot(trail[i]),
+          depth: i
+        }, "", window.location.href);
+      }
+
+      route = routeSnapshot(finalRoute);
+    }
+
     function navigateTo(nextRoute, options) {
       const opts = options || {};
       route = routeSnapshot(nextRoute);
@@ -2849,11 +2893,18 @@
 
     applySettings();
     const existingAppState = history.state && history.state.playerTells ? history.state : null;
-    history.replaceState({
-      playerTells: true,
-      route: routeSnapshot(route),
-      depth: existingAppState ? Number(existingAppState.depth || 0) : 0
-    }, "", window.location.href);
+    const existingDepth = existingAppState ? Number(existingAppState.depth || 0) : 0;
+
+    if (!existingAppState || (existingDepth === 0 && route.screen !== "sites")) {
+      seedBrowserHistoryForRoute(route);
+    } else {
+      history.replaceState({
+        playerTells: true,
+        route: routeSnapshot(route),
+        depth: existingDepth
+      }, "", window.location.href);
+    }
+
     try { sessionStorage.setItem(ROUTE_SESSION_KEY, JSON.stringify(routeSnapshot(route))); } catch (_) {}
     render();
     setTimeout(function() { document.getElementById("loading").classList.add("hide"); }, 2200);
