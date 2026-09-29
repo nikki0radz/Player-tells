@@ -404,6 +404,20 @@
     .history-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .history-player { font-weight: 850; font-size: 12px; }
     .history-site { color: var(--muted); font-size: 10px; }
+    .entry-timestamp {
+      color: var(--muted); font-size: 9px; margin-top: 3px; line-height: 1.35;
+      font-variant-numeric: tabular-nums;
+    }
+    .personal-history-list { display: grid; gap: 7px; }
+    .personal-history-card {
+      border: 1px solid var(--line); background: var(--panel); border-radius: 15px;
+      padding: 11px 12px; display: grid; grid-template-columns: 1fr auto; gap: 10px;
+      align-items: start; cursor: pointer;
+    }
+    .personal-history-card:hover { border-color: rgba(var(--accent-rgb),.35); }
+    .personal-history-action { font-size: 11px; font-weight: 850; line-height: 1.4; }
+    .personal-history-detail { color: var(--muted); font-size: 10px; margin-top: 3px; line-height: 1.45; }
+    .personal-history-time { color: var(--muted); font-size: 9px; margin-top: 4px; font-variant-numeric: tabular-nums; }
     .history-traits { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
     .history-chip { border: 1px solid var(--line); border-radius: 999px; padding: 4px 7px; color: var(--muted); font-size: 9px; }
     .comment-actions { display: flex; gap: 8px; margin-top: 8px; }
@@ -686,6 +700,7 @@
       border: 1px solid var(--line); background: var(--field); border-radius: 14px; padding: 10px;
     }
     .vote-name { font-size: 12px; font-weight: 850; }
+    .vote-time { color: var(--muted); font-size: 9px; margin-top: 2px; font-variant-numeric: tabular-nums; }
     .vote-mini-track { position: relative; height: 4px; background: var(--track); border-radius: 999px; margin-top: 7px; }
     .vote-mini-dot { position: absolute; top: 50%; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); transform: translate(-50%,-50%); }
     .vote-number { font-size: 12px; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; }
@@ -972,6 +987,31 @@
       } catch (_) {
         return new Date(timestamp).toLocaleString();
       }
+    }
+
+    function surveyTimestampLabel(survey) {
+      if (survey && survey.updatedAt) return "Updated " + formatHistoryTime(survey.updatedAt);
+      if (survey && survey.createdAt) return "Submitted " + formatHistoryTime(survey.createdAt);
+      return "Older entry · no timestamp";
+    }
+
+    function commentTimestampLabel(comment) {
+      if (comment && comment.updatedAt) return "Edited " + formatHistoryTime(comment.updatedAt);
+      if (comment && comment.createdAt) return "Posted " + formatHistoryTime(comment.createdAt);
+      if (comment && comment.time && comment.time !== "Demo note") return String(comment.time);
+      return "Older entry · no timestamp";
+    }
+
+    function myActivityHistory() {
+      const items = [];
+      db.players.forEach(function(player) {
+        (player.history || []).forEach(function(item) {
+          if (authorIsCurrent(item.author)) items.push({ player: player, item: item });
+        });
+      });
+      return items.sort(function(a,b) {
+        return Number(b.item.timestamp || 0) - Number(a.item.timestamp || 0);
+      });
     }
 
     function hexToRgb(hex) {
@@ -1695,7 +1735,9 @@
           if (authorIsCurrent(survey.author)) rows.push({ player: player, survey: survey, index: index });
         });
       });
-      return rows.reverse();
+      return rows.sort(function(a,b) {
+        return Number(b.survey.updatedAt || b.survey.createdAt || 0) - Number(a.survey.updatedAt || a.survey.createdAt || 0);
+      });
     }
 
     function myCommentHistory() {
@@ -1705,19 +1747,23 @@
           if (authorIsCurrent(comment.author)) rows.push({ player: player, comment: comment });
         });
       });
-      return rows.reverse();
+      return rows.sort(function(a,b) {
+        return Number(b.comment.updatedAt || b.comment.createdAt || 0) - Number(a.comment.updatedAt || a.comment.createdAt || 0);
+      });
     }
 
     function renderMyProfile() {
       const votes = myVoteHistory();
       const comments = myCommentHistory();
       const followed = (currentUser.followedPlayerIds || []).map(playerById).filter(Boolean);
+      const activity = myActivityHistory();
 
       const voteHtml = votes.length ? votes.map(function(item) {
         const site = siteById(item.player.siteId);
         return '<button class="history-card" data-history-player="' + esc(item.player.id) + '">' +
           '<div class="history-top"><div><div class="history-player">' + esc(item.player.name) + '</div>' +
-          '<div class="history-site">' + esc(site ? site.name : "Unknown site") + '</div></div><span class="chev">›</span></div>' +
+          '<div class="history-site">' + esc(site ? site.name : "Unknown site") + '</div>' +
+          '<div class="entry-timestamp">' + esc(surveyTimestampLabel(item.survey)) + '</div></div><span class="chev">›</span></div>' +
           '<div class="history-traits">' +
             traits.map(function(t) { return '<span class="history-chip">' + esc(t.left) + ' / ' + esc(t.right) + ': ' + esc(item.survey[t.key]) + '</span>'; }).join("") +
           '</div>' +
@@ -1728,7 +1774,8 @@
         const site = siteById(item.player.siteId);
         return '<div class="history-card">' +
           '<div class="history-top"><div><div class="history-player">' + esc(item.player.name) + '</div>' +
-          '<div class="history-site">' + esc(site ? site.name : "Unknown site") + '</div></div></div>' +
+          '<div class="history-site">' + esc(site ? site.name : "Unknown site") + '</div>' +
+          '<div class="entry-timestamp">' + esc(commentTimestampLabel(item.comment)) + '</div></div></div>' +
           '<div class="comment-body">' + esc(item.comment.body) + '</div>' +
           '<div class="comment-actions">' +
             '<button class="comment-action" data-profile-edit-comment="' + esc(item.comment.id) + '" data-comment-player="' + esc(item.player.id) + '">Edit</button>' +
@@ -1750,6 +1797,17 @@
         '</div>';
       }).join("") : '<div class="empty">No favourite players yet. Tap ☆ on a player to follow their updates.</div>';
 
+      const personalHistoryHtml = activity.length ? activity.map(function(entry) {
+        const site = siteById(entry.player.siteId);
+        return '<div class="personal-history-card" data-personal-history-player="' + esc(entry.player.id) + '">' +
+          '<div><div class="personal-history-action">' + esc(entry.item.action || "Updated player") + ' · ' + esc(entry.player.name) + '</div>' +
+          '<div class="history-site">' + esc(site ? site.name : "Unknown site") + '</div>' +
+          (entry.item.detail ? '<div class="personal-history-detail">' + esc(entry.item.detail) + '</div>' : '') +
+          '<div class="personal-history-time">' + esc(formatHistoryTime(entry.item.timestamp)) + '</div></div>' +
+          '<span class="chev">›</span>' +
+        '</div>';
+      }).join("") : '<div class="empty">No personal history recorded yet.</div>';
+
       document.getElementById("app").innerHTML =
         '<div class="shell my-profile-shell">' +
           header() +
@@ -1765,11 +1823,21 @@
           '<section class="history-section"><div class="section-title"><h3>Following</h3><span class="tiny">' + followed.length + '</span></div><div class="followed-list">' + followedHtml + '</div></section>' +
           '<section class="history-section"><div class="section-title"><h3>My votes</h3><span class="tiny">' + votes.length + '</span></div><div class="history-list">' + voteHtml + '</div></section>' +
           '<section class="history-section"><div class="section-title"><h3>My comments</h3><span class="tiny">' + comments.length + '</span></div><div class="history-list">' + commentHtml + '</div></section>' +
+          '<section class="history-section"><div class="section-title"><h3>My history</h3><span class="tiny">' + activity.length + '</span></div><div class="personal-history-list">' + personalHistoryHtml + '</div></section>' +
         '</div>';
 
       bindHeader();
       document.getElementById("profileBack").onclick = goSites;
       document.getElementById("editMyProfile").onclick = openEditMyProfile;
+
+      document.querySelectorAll("[data-personal-history-player]").forEach(function(btn) {
+        btn.onclick = function() {
+          const player = playerById(btn.dataset.personalHistoryPlayer);
+          if (!player) return;
+          route = { screen: "profile", siteId: player.siteId, playerId: player.id };
+          render();
+        };
+      });
 
       document.querySelectorAll("[data-history-player], [data-followed-open]").forEach(function(btn) {
         btn.onclick = function(e) {
@@ -1844,7 +1912,8 @@
         const body = String(new FormData(e.target).get("body") || "").trim();
         if (!body) return;
         found.comment.body = body;
-        found.comment.time = "Edited " + new Date().toLocaleDateString();
+        found.comment.updatedAt = Date.now();
+        found.comment.time = "Edited " + formatHistoryTime(found.comment.updatedAt);
         addPlayerHistory(found.player, "Edited comment", body.length > 80 ? body.slice(0,77) + "…" : body);
         saveState();
         closeModal();
@@ -2426,11 +2495,13 @@
           const text = String(new FormData(form).get("comment") || "").trim();
           if (!text) return;
           player.comments = player.comments || [];
+          const commentNow = Date.now();
           player.comments.push({
-            id: "comment-" + Date.now(),
+            id: "comment-" + commentNow,
             author: currentAuthorSnapshot(),
             body: text,
-            time: new Date().toLocaleDateString()
+            createdAt: commentNow,
+            time: formatHistoryTime(commentNow)
           });
           addPlayerHistory(player, "Added comment", text.length > 80 ? text.slice(0,77) + "…" : text);
           saveState();
@@ -2493,7 +2564,7 @@
             const own = authorIsCurrent(c.author);
             return '<div class="comment">' +
               avatarHtml(author, "user-avatar") +
-              '<div><div class="comment-head"><span class="comment-name">' + esc(author.name || "Unknown") + '</span><span class="comment-time">' + esc(c.time || "") + '</span></div>' +
+              '<div><div class="comment-head"><span class="comment-name">' + esc(author.name || "Unknown") + '</span><span class="comment-time">' + esc(commentTimestampLabel(c)) + '</span></div>' +
               '<div class="comment-body">' + esc(c.body) + '</div>' +
               (own ? '<div class="comment-actions"><button class="comment-action" data-edit-comment="' + esc(c.id) + '" data-comment-player="' + esc(player.id) + '">Edit</button><button class="comment-action delete" data-delete-comment="' + esc(c.id) + '" data-comment-player="' + esc(player.id) + '">Delete</button></div>' : '') +
               '</div>' +
@@ -2519,6 +2590,7 @@
         return '<div class="vote-row">' +
           avatarHtml(author, "user-avatar") +
           '<div><div class="vote-name">' + esc(author.name || "Unknown") + '</div>' +
+          '<div class="vote-time">' + esc(surveyTimestampLabel(vote)) + '</div>' +
           '<div class="vote-mini-track"><span class="vote-mini-dot" style="left:' + pct.toFixed(1) + '%"></span></div></div>' +
           '<div class="vote-number">' + value + '/10</div>' +
         '</div>';
