@@ -392,6 +392,21 @@
       border-color: rgba(var(--accent-rgb),.24); box-shadow: none;
     }
     .history-section { margin-top: 22px; }
+    .profile-collapsible { margin-top: 22px; }
+    .profile-collapsible > summary {
+      list-style: none; cursor: pointer; user-select: none;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      margin-bottom: 0;
+    }
+    .profile-collapsible > summary::-webkit-details-marker { display: none; }
+    .profile-collapsible[open] > summary { margin-bottom: 9px; }
+    .profile-collapsible-title { margin: 0; font-size: 18px; letter-spacing: -.025em; }
+    .profile-collapsible-meta { display: flex; align-items: center; gap: 9px; }
+    .profile-collapse-chevron {
+      color: var(--muted); font-size: 14px; line-height: 1;
+      transform: rotate(-90deg); transition: transform .16s ease;
+    }
+    .profile-collapsible[open] .profile-collapse-chevron { transform: rotate(0deg); }
     .history-list { display: grid; gap: 7px; }
     .my-profile-shell .history-card { padding: 11px 12px; border-radius: 15px; }
     .my-profile-shell .section-title { margin-bottom: 9px; }
@@ -957,6 +972,7 @@
     let settings = loadSettings();
     let route = { screen: "sites", siteId: null, playerId: null };
     let directoryState = { sort: "az", filter: "all" };
+    let myProfileSectionsOpen = { votes: false, comments: false, history: false };
 
     function routeSnapshot(nextRoute) {
       const r = nextRoute || route || {};
@@ -1864,14 +1880,30 @@
             '<button class="primary my-profile-edit" id="editMyProfile">Edit profile</button>' +
           '</section>' +
           '<section class="history-section"><div class="section-title"><h3>Following</h3><span class="tiny">' + followed.length + '</span></div><div class="followed-list">' + followedHtml + '</div></section>' +
-          '<section class="history-section"><div class="section-title"><h3>My votes</h3><span class="tiny">' + votes.length + '</span></div><div class="history-list">' + voteHtml + '</div></section>' +
-          '<section class="history-section"><div class="section-title"><h3>My comments</h3><span class="tiny">' + comments.length + '</span></div><div class="history-list">' + commentHtml + '</div></section>' +
-          '<section class="history-section"><div class="section-title"><h3>My history</h3><span class="tiny">' + activity.length + '</span></div><div class="personal-history-list">' + personalHistoryHtml + '</div></section>' +
+          '<details class="profile-collapsible" data-profile-collapse="votes"' + (myProfileSectionsOpen.votes ? ' open' : '') + '>' +
+            '<summary><h3 class="profile-collapsible-title">My votes</h3><span class="profile-collapsible-meta"><span class="tiny">' + votes.length + '</span><span class="profile-collapse-chevron">⌄</span></span></summary>' +
+            '<div class="history-list">' + voteHtml + '</div>' +
+          '</details>' +
+          '<details class="profile-collapsible" data-profile-collapse="comments"' + (myProfileSectionsOpen.comments ? ' open' : '') + '>' +
+            '<summary><h3 class="profile-collapsible-title">My comments</h3><span class="profile-collapsible-meta"><span class="tiny">' + comments.length + '</span><span class="profile-collapse-chevron">⌄</span></span></summary>' +
+            '<div class="history-list">' + commentHtml + '</div>' +
+          '</details>' +
+          '<details class="profile-collapsible" data-profile-collapse="history"' + (myProfileSectionsOpen.history ? ' open' : '') + '>' +
+            '<summary><h3 class="profile-collapsible-title">My history</h3><span class="profile-collapsible-meta"><span class="tiny">' + activity.length + '</span><span class="profile-collapse-chevron">⌄</span></span></summary>' +
+            '<div class="personal-history-list">' + personalHistoryHtml + '</div>' +
+          '</details>' +
         '</div>';
 
       bindHeader();
       document.getElementById("profileBack").onclick = goSites;
       document.getElementById("editMyProfile").onclick = openEditMyProfile;
+
+      document.querySelectorAll("[data-profile-collapse]").forEach(function(section) {
+        section.addEventListener("toggle", function() {
+          const key = section.dataset.profileCollapse;
+          if (key) myProfileSectionsOpen[key] = section.open;
+        });
+      });
 
       document.querySelectorAll("[data-personal-history-player]").forEach(function(btn) {
         btn.onclick = function() {
