@@ -538,6 +538,14 @@
       cursor: pointer; text-align: left; transition: .16s ease;
     }
     .trait-card:hover { border-color: rgba(var(--accent-rgb),.36); }
+    .trait-card.compare-alert {
+      border-color: rgba(255,179,71,.72);
+      box-shadow: 0 0 0 1px rgba(255,179,71,.10), 0 10px 28px rgba(255,179,71,.08);
+    }
+    .trait-difference-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      margin-right: auto; color: #e69b35; font-size: 9px; font-weight: 850;
+    }
     .trait-labels { display: flex; justify-content: space-between; gap: 14px; color: var(--text); font-size: 13px; }
     .trait-labels strong { font-weight: 780; }
     .trait-scale {
@@ -574,12 +582,58 @@
       box-shadow: 0 0 0 1px rgba(255,71,102,.42), 0 0 10px rgba(255,71,102,.22);
       transform: translate(-50%,-50%);
     }
+    .trait-other-scale {
+      position: relative; height: 2px; border-radius: 99px;
+      margin-top: 10px; background: rgba(34,199,214,.18);
+    }
+    .trait-other-scale::before {
+      content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+      width: var(--other-pct, 50%); border-radius: inherit;
+      background: #22c7d6;
+    }
+    .trait-other-marker {
+      position: absolute; top: 50%; left: var(--other-pct, 50%);
+      width: 13px; height: 13px; border-radius: 50%;
+      background: #22c7d6; border: 2px solid var(--panel);
+      box-shadow: 0 0 0 1px rgba(34,199,214,.42), 0 0 10px rgba(34,199,214,.22);
+      transform: translate(-50%,-50%);
+    }
     .survey-note { color: var(--muted); font-size: 11px; margin: 11px 2px 0; }
 
     .comparison-panel {
-      margin-top: 10px; padding: 10px 12px;
+      margin-top: 10px; padding: 12px;
       border: 1px solid var(--line); border-radius: 14px;
-      background: var(--field);
+      background: var(--field); display: grid; gap: 10px;
+    }
+    .comparison-user-search { position: relative; }
+    .comparison-search {
+      width: 100%; border: 1px solid var(--line); background: var(--panel); color: var(--text);
+      border-radius: 11px; padding: 10px 11px; outline: none; font-size: 11px;
+    }
+    .comparison-search:focus { border-color: rgba(var(--accent-rgb),.45); }
+    .comparison-user-results {
+      display: none; position: absolute; left: 0; right: 0; top: calc(100% + 5px); z-index: 12;
+      max-height: 190px; overflow-y: auto; padding: 5px;
+      border: 1px solid var(--line); border-radius: 12px; background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+    .comparison-user-results.show { display: grid; gap: 4px; }
+    .comparison-user-result {
+      width: 100%; border: 0; background: transparent; color: var(--text);
+      border-radius: 9px; padding: 8px 9px; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      text-align: left; font-size: 10px;
+    }
+    .comparison-user-result:hover { background: rgba(var(--accent-rgb),.06); }
+    .comparison-selected {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      color: var(--muted); font-size: 9px;
+    }
+    .comparison-selected strong { color: #22c7d6; font-size: 10px; }
+    .comparison-clear {
+      border: 0; background: transparent; color: var(--muted); padding: 2px; cursor: pointer; font-size: 10px;
+    }
+    .comparison-options-row {
       display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
     }
     .comparison-option {
@@ -588,18 +642,32 @@
       cursor: pointer; user-select: none;
     }
     .comparison-option input {
-      width: 15px; height: 15px; margin: 0; accent-color: var(--accent);
-      cursor: pointer;
+      width: 15px; height: 15px; margin: 0; accent-color: var(--accent); cursor: pointer;
     }
     .comparison-option.me-option input { accent-color: #ff4766; }
+    .comparison-option.other-option input { accent-color: #22c7d6; }
     .comparison-option.disabled { opacity: .46; cursor: default; }
+    .comparison-bottom-row {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .comparison-sort {
+      border: 1px solid var(--line); background: var(--panel); color: var(--text);
+      border-radius: 9px; padding: 7px 9px; font-size: 9px; outline: none;
+    }
     .comparison-key {
       display: inline-flex; align-items: center; gap: 5px;
-      margin-left: auto; color: var(--muted); font-size: 9px;
+      color: var(--muted); font-size: 9px;
     }
     .comparison-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
     .comparison-dot.me { background: #ff4766; }
-    .comparison-help { flex-basis: 100%; color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .comparison-dot.other { background: #22c7d6; }
+    .comparison-help { color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .difference-setting {
+      display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;
+      border: 1px solid var(--line); background: var(--field); border-radius: 13px; padding: 11px 12px;
+    }
+    .difference-setting input { width: 100%; accent-color: var(--accent); }
+    .difference-setting-value { min-width: 44px; text-align: right; color: var(--accent); font-size: 11px; font-weight: 850; }
 
     .player-summary {
       margin-top: 18px;
@@ -1066,10 +1134,11 @@
         if (saved) return {
           theme: saved.theme === "light" ? "light" : "dark",
           accent: /^#[0-9a-f]{6}$/i.test(saved.accent || "") ? saved.accent : "#c7ff3a",
-          recentColors: Array.isArray(saved.recentColors) ? saved.recentColors.filter(function(c) { return /^#[0-9a-f]{6}$/i.test(c); }).slice(0, 8) : []
+          recentColors: Array.isArray(saved.recentColors) ? saved.recentColors.filter(function(c) { return /^#[0-9a-f]{6}$/i.test(c); }).slice(0, 8) : [],
+          differenceThreshold: Math.max(1, Math.min(9, Number(saved.differenceThreshold || 3)))
         };
       } catch (e) {}
-      return { theme: "dark", accent: "#c7ff3a", recentColors: [] };
+      return { theme: "dark", accent: "#c7ff3a", recentColors: [], differenceThreshold: 3 };
     }
 
     function loadCompareSettings() {
@@ -1077,10 +1146,14 @@
         const saved = JSON.parse(localStorage.getItem(COMPARE_KEY));
         if (saved) return {
           showMe: !!saved.showMe,
-          includeMe: saved.includeMe !== false
+          showOther: !!saved.showOther,
+          includeMe: saved.includeMe !== false,
+          otherUserId: String(saved.otherUserId || ""),
+          otherUserName: String(saved.otherUserName || ""),
+          sort: ["default","differenceDesc","differenceAsc","averageDesc","averageAsc","meDesc","meAsc","otherDesc","otherAsc"].includes(saved.sort) ? saved.sort : "default"
         };
       } catch (_) {}
-      return { showMe: false, includeMe: true };
+      return { showMe: false, showOther: false, includeMe: true, otherUserId: "", otherUserName: "", sort: "default" };
     }
 
     let db = loadState();
@@ -1821,6 +1894,10 @@
           '<div><div class="tiny">Changes buttons, markers and highlights.</div>' +
           '<button class="ghost change-hue-btn" id="changeHue" type="button">Change hue</button></div>' +
         '</div></div>' +
+        '<div class="setting-row"><div class="setting-title">Comparison highlights</div>' +
+          '<div class="tiny" style="margin-bottom:8px">Highlight a trait when the visible scores differ by this many points or more.</div>' +
+          '<div class="difference-setting"><input id="differenceThreshold" type="range" min="1" max="9" step="1" value="' + esc(settings.differenceThreshold) + '">' +
+          '<span class="difference-setting-value" id="differenceThresholdValue">' + esc(settings.differenceThreshold) + '+ pts</span></div></div>' +
         '<div class="setting-row"><div class="setting-title">Manage</div><div class="settings-nav">' +
           '<button class="settings-nav-btn" id="editPlayersBtn"><span><strong>Edit players</strong><small>Names, aliases and profile pictures</small></span><span>›</span></button>' +
           '<button class="settings-nav-btn" id="editSitesBtn"><span><strong>Edit sites</strong><small>Names, nicknames and site pictures</small></span><span>›</span></button>' +
@@ -1837,6 +1914,14 @@
       });
 
       document.getElementById("changeHue").onclick = openColourPicker;
+      const differenceThreshold = document.getElementById("differenceThreshold");
+      if (differenceThreshold) {
+        differenceThreshold.oninput = function() {
+          settings.differenceThreshold = Math.max(1, Math.min(9, Number(differenceThreshold.value || 3)));
+          document.getElementById("differenceThresholdValue").textContent = settings.differenceThreshold + "+ pts";
+          saveSettings();
+        };
+      }
       document.getElementById("editPlayersBtn").onclick = function() {
         closeModal();
         navigateTo({ screen: "editPlayers", siteId: null, playerId: null });
@@ -2679,22 +2764,87 @@
       const mySurvey = mySurveyForPlayer(player);
       const canCompareMe = !!mySurvey;
 
-      const traitsHtml = traits.map(function(t) {
-        const allValidVotes = (player.surveys || []).filter(function(s) {
-          return Number.isFinite(Number(s[t.key]));
+      const comparisonUsers = [];
+      const seenComparisonUsers = new Set();
+      (player.surveys || []).forEach(function(survey) {
+        if (!survey.author || authorIsCurrent(survey.author) || seenComparisonUsers.has(survey.author.id)) return;
+        seenComparisonUsers.add(survey.author.id);
+        comparisonUsers.push({
+          id: survey.author.id,
+          name: survey.author.name || "Unknown",
+          avatar: survey.author.avatar || ""
+        });
+      });
+      comparisonUsers.sort(function(a,b) { return a.name.localeCompare(b.name, undefined, { sensitivity: "base" }); });
+
+      const selectedOther = comparisonUsers.find(function(user) {
+        return user.id === compareSettings.otherUserId;
+      }) || null;
+      const otherSurvey = selectedOther ? (player.surveys || []).find(function(survey) {
+        return survey.author && survey.author.id === selectedOther.id;
+      }) : null;
+      const canCompareOther = !!otherSurvey;
+
+      const traitViews = traits.map(function(t, originalIndex) {
+        const allValidVotes = (player.surveys || []).filter(function(survey) {
+          return Number.isFinite(Number(survey[t.key]));
         });
         const averageVotes = compareSettings.includeMe
           ? allValidVotes
-          : allValidVotes.filter(function(s) { return !authorIsCurrent(s.author); });
+          : allValidVotes.filter(function(survey) { return !authorIsCurrent(survey.author); });
         const avg = averageVotes.length
-          ? averageVotes.reduce(function(sum, s) { return sum + Number(s[t.key]); }, 0) / averageVotes.length
+          ? averageVotes.reduce(function(sum, survey) { return sum + Number(survey[t.key]); }, 0) / averageVotes.length
           : null;
-        const pct = avg == null ? null : ((avg - 1) / 9) * 100;
         const myValue = mySurvey && Number.isFinite(Number(mySurvey[t.key])) ? Number(mySurvey[t.key]) : null;
-        const myPct = myValue == null ? null : ((myValue - 1) / 9) * 100;
-        const voteCount = allValidVotes.length;
+        const otherValue = otherSurvey && Number.isFinite(Number(otherSurvey[t.key])) ? Number(otherSurvey[t.key]) : null;
 
-        return '<button class="trait-card" data-trait="' + t.key + '">' +
+        const visibleValues = [];
+        if (avg != null) visibleValues.push(avg);
+        if (compareSettings.showMe && myValue != null) visibleValues.push(myValue);
+        if (compareSettings.showOther && otherValue != null) visibleValues.push(otherValue);
+        const difference = visibleValues.length > 1
+          ? Math.max.apply(null, visibleValues) - Math.min.apply(null, visibleValues)
+          : 0;
+
+        return {
+          trait: t,
+          originalIndex: originalIndex,
+          avg: avg,
+          myValue: myValue,
+          otherValue: otherValue,
+          difference: difference,
+          voteCount: allValidVotes.length
+        };
+      });
+
+      function scoreForSort(view, mode) {
+        if (mode === "differenceDesc" || mode === "differenceAsc") return view.difference;
+        if (mode === "averageDesc" || mode === "averageAsc") return view.avg;
+        if (mode === "meDesc" || mode === "meAsc") return view.myValue;
+        if (mode === "otherDesc" || mode === "otherAsc") return view.otherValue;
+        return view.originalIndex;
+      }
+
+      if (compareSettings.sort !== "default") {
+        const descending = /Desc$/.test(compareSettings.sort);
+        traitViews.sort(function(a,b) {
+          const av = scoreForSort(a, compareSettings.sort);
+          const bv = scoreForSort(b, compareSettings.sort);
+          if (av == null && bv == null) return a.originalIndex - b.originalIndex;
+          if (av == null) return 1;
+          if (bv == null) return -1;
+          return (descending ? bv - av : av - bv) || a.originalIndex - b.originalIndex;
+        });
+      }
+
+      const traitsHtml = traitViews.map(function(view) {
+        const t = view.trait;
+        const pct = view.avg == null ? null : ((view.avg - 1) / 9) * 100;
+        const myPct = view.myValue == null ? null : ((view.myValue - 1) / 9) * 100;
+        const otherPct = view.otherValue == null ? null : ((view.otherValue - 1) / 9) * 100;
+        const highlighted = view.difference >= Number(settings.differenceThreshold || 3) && view.difference > 0;
+
+        return '<button class="trait-card' + (highlighted ? ' compare-alert' : '') + '" data-trait="' + t.key + '">' +
           '<div class="trait-labels"><strong>' + esc(t.left) + '</strong><strong>' + esc(t.right) + '</strong></div>' +
           '<div class="trait-scale"><div class="trait-ticks">' + new Array(10).fill('<span></span>').join("") + '</div>' +
             (pct == null ? '' : '<span class="trait-marker" style="left:' + pct.toFixed(1) + '%"></span>') +
@@ -2702,9 +2852,13 @@
           (compareSettings.showMe && myPct != null
             ? '<div class="trait-me-scale" style="--me-pct:' + myPct.toFixed(1) + '%"><span class="trait-me-marker"></span></div>'
             : '') +
+          (compareSettings.showOther && otherPct != null
+            ? '<div class="trait-other-scale" style="--other-pct:' + otherPct.toFixed(1) + '%"><span class="trait-other-marker"></span></div>'
+            : '') +
           '<div class="trait-hint">' +
+            (highlighted ? '<span class="trait-difference-badge">Δ ' + view.difference.toFixed(1) + '</span>' : '') +
             (pct == null ? 'No ' + (compareSettings.includeMe ? '' : 'other ') + 'average yet · ' : '') +
-            'View ' + voteCount + (voteCount === 1 ? ' vote' : ' votes') +
+            'View ' + view.voteCount + (view.voteCount === 1 ? ' vote' : ' votes') +
           '</div>' +
         '</button>';
       }).join("");
@@ -2731,14 +2885,41 @@
             '</div>' +
           '</section>' +
           '<div class="comparison-panel">' +
-            '<label class="comparison-option me-option' + (canCompareMe ? '' : ' disabled') + '">' +
-              '<input id="showMeComparison" type="checkbox"' + (compareSettings.showMe ? ' checked' : '') + (canCompareMe ? '' : ' disabled') + '> Me vs average' +
-            '</label>' +
-            '<label class="comparison-option">' +
-              '<input id="includeMeAverage" type="checkbox"' + (compareSettings.includeMe ? ' checked' : '') + '> Include me in average' +
-            '</label>' +
-            '<span class="comparison-key"><span class="comparison-dot"></span>Average <span class="comparison-dot me"></span>Me</span>' +
-            (!canCompareMe ? '<div class="comparison-help">Add your read for this player to enable Me vs average.</div>' : '') +
+            '<div class="comparison-user-search">' +
+              '<input class="comparison-search" id="comparisonUserSearch" type="text" placeholder="Compare with another user…" autocomplete="off">' +
+              '<div class="comparison-user-results" id="comparisonUserResults"></div>' +
+            '</div>' +
+            (compareSettings.otherUserId
+              ? '<div class="comparison-selected"><span>Comparing with <strong>' + esc(selectedOther ? selectedOther.name : compareSettings.otherUserName || "selected user") + '</strong>' +
+                (selectedOther ? '' : ' · no read on this player') + '</span><button class="comparison-clear" id="clearComparisonUser" type="button">Clear</button></div>'
+              : '') +
+            '<div class="comparison-options-row">' +
+              '<label class="comparison-option me-option' + (canCompareMe ? '' : ' disabled') + '">' +
+                '<input id="showMeComparison" type="checkbox"' + (compareSettings.showMe ? ' checked' : '') + (canCompareMe ? '' : ' disabled') + '> Me' +
+              '</label>' +
+              '<label class="comparison-option other-option' + (canCompareOther ? '' : ' disabled') + '">' +
+                '<input id="showOtherComparison" type="checkbox"' + (compareSettings.showOther ? ' checked' : '') + (canCompareOther ? '' : ' disabled') + '> Other user' +
+              '</label>' +
+              '<label class="comparison-option">' +
+                '<input id="includeMeAverage" type="checkbox"' + (compareSettings.includeMe ? ' checked' : '') + '> Include me in average' +
+              '</label>' +
+            '</div>' +
+            '<div class="comparison-bottom-row">' +
+              '<select class="comparison-sort" id="comparisonSort" aria-label="Sort traits">' +
+                '<option value="default"' + (compareSettings.sort === 'default' ? ' selected' : '') + '>Original order</option>' +
+                '<option value="differenceDesc"' + (compareSettings.sort === 'differenceDesc' ? ' selected' : '') + '>Biggest difference</option>' +
+                '<option value="differenceAsc"' + (compareSettings.sort === 'differenceAsc' ? ' selected' : '') + '>Smallest difference</option>' +
+                '<option value="averageDesc"' + (compareSettings.sort === 'averageDesc' ? ' selected' : '') + '>Highest average</option>' +
+                '<option value="averageAsc"' + (compareSettings.sort === 'averageAsc' ? ' selected' : '') + '>Lowest average</option>' +
+                '<option value="meDesc"' + (compareSettings.sort === 'meDesc' ? ' selected' : '') + '>Highest my score</option>' +
+                '<option value="meAsc"' + (compareSettings.sort === 'meAsc' ? ' selected' : '') + '>Lowest my score</option>' +
+                '<option value="otherDesc"' + (compareSettings.sort === 'otherDesc' ? ' selected' : '') + '>Highest other score</option>' +
+                '<option value="otherAsc"' + (compareSettings.sort === 'otherAsc' ? ' selected' : '') + '>Lowest other score</option>' +
+              '</select>' +
+              '<span class="comparison-key"><span class="comparison-dot"></span>Average <span class="comparison-dot me"></span>Me <span class="comparison-dot other"></span>Other</span>' +
+            '</div>' +
+            (!canCompareMe ? '<div class="comparison-help">Add your read to enable Me.</div>' : '') +
+            (!comparisonUsers.length ? '<div class="comparison-help">No other users have rated this player yet.</div>' : '') +
           '</div>' +
           '<section class="intel">' + traitsHtml + '</section>' +
           '<div class="survey-note">The marker shows the average. Tap any trait to see every individual vote.</div>' +
@@ -2766,6 +2947,16 @@
           renderProfile();
         };
       }
+
+      const showOtherComparison = document.getElementById("showOtherComparison");
+      if (showOtherComparison) {
+        showOtherComparison.onchange = function() {
+          compareSettings.showOther = !!showOtherComparison.checked;
+          saveCompareSettings();
+          renderProfile();
+        };
+      }
+
       const includeMeAverage = document.getElementById("includeMeAverage");
       if (includeMeAverage) {
         includeMeAverage.onchange = function() {
@@ -2774,6 +2965,61 @@
           renderProfile();
         };
       }
+
+      const comparisonSort = document.getElementById("comparisonSort");
+      if (comparisonSort) {
+        comparisonSort.onchange = function() {
+          compareSettings.sort = comparisonSort.value;
+          saveCompareSettings();
+          renderProfile();
+        };
+      }
+
+      const comparisonUserSearch = document.getElementById("comparisonUserSearch");
+      const comparisonUserResults = document.getElementById("comparisonUserResults");
+      if (comparisonUserSearch && comparisonUserResults) {
+        function drawComparisonUsers() {
+          const query = normalizeSearch(comparisonUserSearch.value);
+          const matches = comparisonUsers.filter(function(user) {
+            return !query || normalizeSearch(user.name).includes(query);
+          }).slice(0, 8);
+
+          comparisonUserResults.innerHTML = matches.length
+            ? matches.map(function(user) {
+                return '<button class="comparison-user-result" type="button" data-comparison-user="' + esc(user.id) + '">' +
+                  '<span>' + esc(user.name) + '</span><span class="tiny">Compare</span></button>';
+              }).join("")
+            : '<div class="tiny" style="padding:8px">No matching users with a read on this player.</div>';
+          comparisonUserResults.classList.add("show");
+
+          document.querySelectorAll("[data-comparison-user]").forEach(function(btn) {
+            btn.onclick = function() {
+              const chosen = comparisonUsers.find(function(user) { return user.id === btn.dataset.comparisonUser; });
+              if (!chosen) return;
+              compareSettings.otherUserId = chosen.id;
+              compareSettings.otherUserName = chosen.name;
+              compareSettings.showOther = true;
+              saveCompareSettings();
+              renderProfile();
+            };
+          });
+        }
+
+        comparisonUserSearch.onfocus = drawComparisonUsers;
+        comparisonUserSearch.oninput = drawComparisonUsers;
+      }
+
+      const clearComparisonUser = document.getElementById("clearComparisonUser");
+      if (clearComparisonUser) {
+        clearComparisonUser.onclick = function() {
+          compareSettings.otherUserId = "";
+          compareSettings.otherUserName = "";
+          compareSettings.showOther = false;
+          saveCompareSettings();
+          renderProfile();
+        };
+      }
+
       document.getElementById("playerHistoryBtn").onclick = function() { openPlayerHistory(player); };
       document.querySelectorAll("[data-linked-player]").forEach(function(btn) {
         btn.onclick = function() {
