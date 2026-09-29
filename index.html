@@ -662,11 +662,32 @@
       color: var(--text); font-size: 10px; font-weight: 750;
       cursor: pointer; user-select: none;
     }
-    .comparison-option input {
-      width: 15px; height: 15px; margin: 0; accent-color: var(--accent); cursor: pointer;
+    .comparison-option input[type="checkbox"] {
+      appearance: none; -webkit-appearance: none;
+      width: 15px; height: 15px; margin: 0;
+      border: 1px solid var(--line); border-radius: 4px;
+      background: var(--panel); cursor: pointer;
+      display: inline-grid; place-items: center;
+      position: relative;
     }
-    .comparison-option.me-option input { accent-color: #ff4766; }
-    .comparison-option.other-option input { accent-color: #22c7d6; }
+    .comparison-option input[type="checkbox"]::after {
+      content: "✓";
+      color: #fff; font-size: 11px; line-height: 1; font-weight: 950;
+      opacity: 0; transform: scale(.72);
+      transition: opacity .12s ease, transform .12s ease;
+    }
+    .comparison-option input[type="checkbox"]:checked {
+      background: var(--accent); border-color: var(--accent);
+    }
+    .comparison-option.me-option input[type="checkbox"]:checked {
+      background: #ff4766; border-color: #ff4766;
+    }
+    .comparison-option.other-option input[type="checkbox"]:checked {
+      background: #22c7d6; border-color: #22c7d6;
+    }
+    .comparison-option input[type="checkbox"]:checked::after {
+      opacity: 1; transform: scale(1);
+    }
     .comparison-option.disabled { opacity: .46; cursor: default; }
     .comparison-bottom-row {
       display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
@@ -683,6 +704,17 @@
     .comparison-dot.me { background: #ff4766; }
     .comparison-dot.other { background: #22c7d6; }
     .comparison-help { color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .comparison-confidence {
+      border: 1px solid rgba(34,199,214,.24);
+      background: rgba(34,199,214,.055);
+      border-radius: 11px; padding: 9px 10px;
+      color: var(--text); font-size: 10px; line-height: 1.45;
+    }
+    .comparison-confidence strong { color: #22c7d6; }
+    .confidence-block {
+      margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line);
+    }
+    .confidence-block .survey-side-labels { margin-bottom: 7px; }
     .difference-setting {
       display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;
       border: 1px solid var(--line); background: var(--field); border-radius: 13px; padding: 11px 12px;
@@ -2915,6 +2947,13 @@
               ? '<div class="comparison-selected"><span>Comparing with <strong>' + esc(selectedOther ? selectedOther.name : compareSettings.otherUserName || "selected user") + '</strong>' +
                 (selectedOther ? '' : ' · no read on this player') + '</span><button class="comparison-clear" id="clearComparisonUser" type="button">Clear</button></div>'
               : '') +
+            (selectedOther && otherSurvey
+              ? '<div class="comparison-confidence"><strong>' + esc(selectedOther.name) + '</strong> ' +
+                  (Number.isFinite(Number(otherSurvey.confidence))
+                    ? 'rated themselves <strong>' + esc(otherSurvey.confidence) + '/10</strong> on confidence for reads on this player.'
+                    : 'did not record a confidence score for this read.') +
+                '</div>'
+              : '') +
             '<div class="comparison-options-row">' +
               '<label class="comparison-option">' +
                 '<input id="showAverageComparison" type="checkbox"' + (compareSettings.showAverage ? ' checked' : '') + '> Average' +
@@ -3208,7 +3247,7 @@
         return;
       }
 
-      const values = existing || { ie: 5, sn: 5, tf: 5, jp: 5 };
+      const values = existing || { ie: 5, sn: 5, tf: 5, jp: 5, confidence: 5 };
       const rows = traits.map(function(t) {
         const value = Number(values[t.key]) || 5;
         return '<div class="survey-row">' +
@@ -3218,11 +3257,20 @@
           '<div class="survey-value" id="value-' + t.key + '">' + value + ' / 10</div>' +
         '</div>';
       }).join("");
+      const confidenceValue = Number.isFinite(Number(values.confidence)) ? Number(values.confidence) : 5;
+      const confidenceHtml =
+        '<div class="confidence-block">' +
+          '<div class="survey-side-labels"><span>Confidence in your read</span><span>Very confident</span></div>' +
+          '<div class="range-wrap"><input type="range" name="confidence" min="1" max="10" value="' + confidenceValue + '" step="1">' +
+          '<div class="tick-row">' + new Array(10).fill('<span></span>').join("") + '</div></div>' +
+          '<div class="survey-value" id="value-confidence">' + confidenceValue + ' / 10</div>' +
+          '<div class="tiny" style="margin-top:7px">How confident are you that your ratings of this player are accurate?</div>' +
+        '</div>';
 
       openModal(
         '<div class="modal-head"><div><div class="eyebrow">' + esc(player.name) + '</div><h3>' + (existing ? 'Edit your read' : 'Add your read') + '</h3></div><button class="modal-close" data-close>×</button></div>' +
         '<div class="tiny">Each user has one survey per player. You can come back and update yours whenever your read changes.</div>' +
-        '<form id="surveyForm"><div class="survey-block">' + rows + '</div>' +
+        '<form id="surveyForm"><div class="survey-block">' + rows + confidenceHtml + '</div>' +
         '<div class="form-actions"><button class="ghost" type="button" data-close>Cancel</button><button class="primary" type="submit">' + (existing ? 'Update survey' : 'Save survey') + '</button></div></form>'
       );
 
@@ -3239,17 +3287,19 @@
 
         if (existing) {
           traits.forEach(function(t) { existing[t.key] = Number(form.get(t.key)); });
+          existing.confidence = Number(form.get("confidence"));
           existing.author = currentAuthorSnapshot();
           existing.updatedAt = Date.now();
-          addPlayerHistory(player, "Updated survey", "Changed their player read");
+          addPlayerHistory(player, "Updated survey", "Changed their player read · confidence " + existing.confidence + "/10");
         } else {
           const survey = {
             author: currentAuthorSnapshot(),
+            confidence: Number(form.get("confidence")),
             createdAt: Date.now()
           };
           traits.forEach(function(t) { survey[t.key] = Number(form.get(t.key)); });
           player.surveys.push(survey);
-          addPlayerHistory(player, "Submitted survey", "Added their player read");
+          addPlayerHistory(player, "Submitted survey", "Added their player read · confidence " + survey.confidence + "/10");
         }
 
         saveState();
