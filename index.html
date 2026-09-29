@@ -970,7 +970,26 @@
 
     let db = loadState();
     let settings = loadSettings();
-    let route = { screen: "sites", siteId: null, playerId: null };
+
+    const ROUTE_SESSION_KEY = "playerTells_currentRoute_v1";
+
+    function loadSavedRoute() {
+      if (history.state && history.state.playerTells && history.state.route) {
+        return history.state.route;
+      }
+      try {
+        const savedRoute = JSON.parse(sessionStorage.getItem(ROUTE_SESSION_KEY));
+        if (savedRoute && savedRoute.screen) return savedRoute;
+      } catch (_) {}
+      return { screen: "sites", siteId: null, playerId: null };
+    }
+
+    const savedInitialRoute = loadSavedRoute();
+    let route = {
+      screen: savedInitialRoute.screen || "sites",
+      siteId: savedInitialRoute.siteId || null,
+      playerId: savedInitialRoute.playerId || null
+    };
     let directoryState = { sort: "az", filter: "all" };
     let myProfileSectionsOpen = { votes: false, comments: false, history: false };
 
@@ -998,6 +1017,7 @@
       if (opts.replace) history.replaceState(state, "", window.location.href);
       else history.pushState(state, "", window.location.href);
 
+      try { sessionStorage.setItem(ROUTE_SESSION_KEY, JSON.stringify(routeSnapshot(route))); } catch (_) {}
       render();
     }
 
@@ -1021,6 +1041,7 @@
       if (!event.state || !event.state.playerTells) return;
       closeModalSilently();
       route = routeSnapshot(event.state.route);
+      try { sessionStorage.setItem(ROUTE_SESSION_KEY, JSON.stringify(routeSnapshot(route))); } catch (_) {}
       render();
     });
 
@@ -2777,11 +2798,13 @@
     });
 
     applySettings();
+    const existingAppState = history.state && history.state.playerTells ? history.state : null;
     history.replaceState({
       playerTells: true,
       route: routeSnapshot(route),
-      depth: 0
+      depth: existingAppState ? Number(existingAppState.depth || 0) : 0
     }, "", window.location.href);
+    try { sessionStorage.setItem(ROUTE_SESSION_KEY, JSON.stringify(routeSnapshot(route))); } catch (_) {}
     render();
     setTimeout(function() { document.getElementById("loading").classList.add("hide"); }, 2200);
   </script>
