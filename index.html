@@ -19,6 +19,12 @@
       --accent: #c7ff3a;
       --accent-rgb: 199,255,58;
       --on-accent: #080a0d;
+      --me-color: var(--me-color);
+      --me-rgb: 255,71,102;
+      --other-color: var(--other-color);
+      --other-rgb: 34,199,214;
+      --highlight-color: var(--highlight-color);
+      --highlight-rgb: 240,161,58;
       --shadow: 0 18px 50px rgba(0,0,0,.38);
       --topbar-a: rgba(8,10,13,.97);
       --topbar-b: rgba(8,10,13,.84);
@@ -539,25 +545,25 @@
     }
     .trait-card:hover { border-color: rgba(var(--accent-rgb),.36); }
     .trait-card.compare-alert {
-      border: 3px solid #f0a13a;
+      border: 3px solid var(--highlight-color);
       box-shadow:
-        0 0 0 3px rgba(240,161,58,.14),
-        0 0 30px rgba(240,161,58,.26),
-        0 16px 38px rgba(240,161,58,.16);
+        0 0 0 3px rgba(var(--highlight-rgb),.14),
+        0 0 30px rgba(var(--highlight-rgb),.26),
+        0 16px 38px rgba(var(--highlight-rgb),.16);
       background:
-        linear-gradient(rgba(240,161,58,.085), rgba(240,161,58,.085)),
+        linear-gradient(rgba(var(--highlight-rgb),.085), rgba(var(--highlight-rgb),.085)),
         var(--panel);
     }
     .trait-card.compare-alert .trait-labels strong {
-      text-shadow: 0 0 14px rgba(240,161,58,.18);
+      text-shadow: 0 0 14px rgba(var(--highlight-rgb),.18);
     }
     .trait-difference-badge {
       display: inline-flex; align-items: center; gap: 4px;
       margin-right: auto; padding: 4px 7px;
-      border: 1px solid rgba(240,161,58,.52);
-      border-radius: 999px; background: rgba(240,161,58,.18);
-      color: #e89425; font-size: 9px; font-weight: 950;
-      box-shadow: 0 0 12px rgba(240,161,58,.12);
+      border: 1px solid rgba(var(--highlight-rgb),.52);
+      border-radius: 999px; background: rgba(var(--highlight-rgb),.18);
+      color: var(--highlight-color); font-size: 9px; font-weight: 950;
+      box-shadow: 0 0 12px rgba(var(--highlight-rgb),.12);
     }
     .trait-labels { display: flex; justify-content: space-between; gap: 14px; color: var(--text); font-size: 13px; }
     .trait-labels strong { font-weight: 780; }
@@ -593,38 +599,38 @@
     .trait-hint-right { margin-left: auto; text-align: right; white-space: nowrap; }
     .trait-footer-left { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 6px; min-width: 0; }
     .trait-deltas { display: inline-flex; align-items: center; gap: 6px; font-size: 8px; font-weight: 850; }
-    .trait-delta.me { color: #ff4766; }
-    .trait-delta.other { color: #22c7d6; }
+    .trait-delta.me { color: var(--me-color); }
+    .trait-delta.other { color: var(--other-color); }
     .trait-me-scale {
       position: relative; height: 2px; border-radius: 99px;
-      margin-top: 10px; background: rgba(255,71,102,.18);
+      margin-top: 10px; background: rgba(var(--me-rgb),.18);
     }
     .trait-me-scale::before {
       content: ""; position: absolute; left: 0; top: 0; bottom: 0;
       width: var(--me-pct, 50%); border-radius: inherit;
-      background: #ff4766;
+      background: var(--me-color);
     }
     .trait-me-marker {
       position: absolute; top: 50%; left: var(--me-pct, 50%);
       width: 13px; height: 13px; border-radius: 50%;
-      background: #ff4766; border: 2px solid var(--panel);
-      box-shadow: 0 0 0 1px rgba(255,71,102,.42), 0 0 10px rgba(255,71,102,.22);
+      background: var(--me-color); border: 2px solid var(--panel);
+      box-shadow: 0 0 0 1px rgba(var(--me-rgb),.42), 0 0 10px rgba(var(--me-rgb),.22);
       transform: translate(-50%,-50%);
     }
     .trait-other-scale {
       position: relative; height: 2px; border-radius: 99px;
-      margin-top: 10px; background: rgba(34,199,214,.18);
+      margin-top: 10px; background: rgba(var(--other-rgb),.18);
     }
     .trait-other-scale::before {
       content: ""; position: absolute; left: 0; top: 0; bottom: 0;
       width: var(--other-pct, 50%); border-radius: inherit;
-      background: #22c7d6;
+      background: var(--other-color);
     }
     .trait-other-marker {
       position: absolute; top: 50%; left: var(--other-pct, 50%);
       width: 13px; height: 13px; border-radius: 50%;
-      background: #22c7d6; border: 2px solid var(--panel);
-      box-shadow: 0 0 0 1px rgba(34,199,214,.42), 0 0 10px rgba(34,199,214,.22);
+      background: var(--other-color); border: 2px solid var(--panel);
+      box-shadow: 0 0 0 1px rgba(var(--other-rgb),.42), 0 0 10px rgba(var(--other-rgb),.22);
       transform: translate(-50%,-50%);
     }
     .survey-note { color: var(--muted); font-size: 11px; margin: 11px 2px 0; }
@@ -658,7 +664,7 @@
       display: flex; align-items: center; justify-content: space-between; gap: 10px;
       color: var(--muted); font-size: 9px;
     }
-    .comparison-selected strong { color: #22c7d6; font-size: 10px; }
+    .comparison-selected strong { color: var(--other-color); font-size: 10px; }
     .comparison-clear {
       border: 0; background: transparent; color: var(--muted); padding: 2px; cursor: pointer; font-size: 10px;
     }
@@ -675,10 +681,10 @@
       background: rgba(var(--accent-rgb),.055);
     }
     .comparison-options-row .comparison-option.me-option:has(input:checked) {
-      border-color: rgba(255,71,102,.42); background: rgba(255,71,102,.06);
+      border-color: rgba(var(--me-rgb),.42); background: rgba(var(--me-rgb),.06);
     }
     .comparison-options-row .comparison-option.other-option:has(input:checked) {
-      border-color: rgba(34,199,214,.42); background: rgba(34,199,214,.06);
+      border-color: rgba(var(--other-rgb),.42); background: rgba(var(--other-rgb),.06);
     }
     .comparison-average-row {
       display: flex; align-items: center; gap: 10px;
@@ -714,10 +720,10 @@
       background: var(--accent); border-color: var(--accent);
     }
     .comparison-option.me-option input[type="checkbox"]:checked {
-      background: #ff4766; border-color: #ff4766;
+      background: var(--me-color); border-color: var(--me-color);
     }
     .comparison-option.other-option input[type="checkbox"]:checked {
-      background: #22c7d6; border-color: #22c7d6;
+      background: var(--other-color); border-color: var(--other-color);
     }
     .comparison-option input[type="checkbox"]:checked::after {
       opacity: 1; transform: scale(1);
@@ -737,16 +743,16 @@
       color: var(--muted); font-size: 9px;
     }
     .comparison-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
-    .comparison-dot.me { background: #ff4766; }
-    .comparison-dot.other { background: #22c7d6; }
+    .comparison-dot.me { background: var(--me-color); }
+    .comparison-dot.other { background: var(--other-color); }
     .comparison-help { color: var(--muted); font-size: 9px; line-height: 1.4; }
     .comparison-confidence {
-      border: 1px solid rgba(34,199,214,.24);
-      background: rgba(34,199,214,.055);
+      border: 1px solid rgba(var(--other-rgb),.24);
+      background: rgba(var(--other-rgb),.055);
       border-radius: 11px; padding: 9px 10px;
       color: var(--text); font-size: 10px; line-height: 1.45;
     }
-    .comparison-confidence strong { color: #22c7d6; }
+    .comparison-confidence strong { color: var(--other-color); }
     .confidence-block {
       margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line);
     }
@@ -757,6 +763,22 @@
     }
     .difference-setting input { width: 100%; accent-color: var(--accent); }
     .difference-setting-value { min-width: 44px; text-align: right; color: var(--accent); font-size: 11px; font-weight: 850; }
+    .comparison-colour-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px;
+    }
+    .comparison-colour-choice {
+      display: grid; grid-template-columns: 24px 1fr; align-items: center; gap: 6px;
+      border: 1px solid var(--line); background: var(--field); border-radius: 9px;
+      padding: 6px 7px; color: var(--muted); font-size: 8px; line-height: 1.15;
+      cursor: pointer;
+    }
+    .comparison-colour-choice input[type="color"] {
+      width: 24px; height: 24px; padding: 0; border: 0; border-radius: 6px;
+      background: transparent; cursor: pointer; overflow: hidden;
+    }
+    .comparison-colour-choice input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    .comparison-colour-choice input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 6px; }
+    .comparison-colour-choice input[type="color"]::-moz-color-swatch { border: 0; border-radius: 6px; }
 
     .player-summary {
       margin-top: 18px;
@@ -1237,10 +1259,16 @@
           theme: saved.theme === "light" ? "light" : "dark",
           accent: /^#[0-9a-f]{6}$/i.test(saved.accent || "") ? saved.accent : "#c7ff3a",
           recentColors: Array.isArray(saved.recentColors) ? saved.recentColors.filter(function(c) { return /^#[0-9a-f]{6}$/i.test(c); }).slice(0, 8) : [],
-          differenceThreshold: Math.max(1, Math.min(9, Number(saved.differenceThreshold || 3)))
+          differenceThreshold: Math.max(1, Math.min(9, Number(saved.differenceThreshold || 3))),
+          meColor: /^#[0-9a-f]{6}$/i.test(saved.meColor || "") ? saved.meColor : "#ff4766",
+          otherColor: /^#[0-9a-f]{6}$/i.test(saved.otherColor || "") ? saved.otherColor : "#22c7d6",
+          highlightColor: /^#[0-9a-f]{6}$/i.test(saved.highlightColor || "") ? saved.highlightColor : "#f0a13a"
         };
       } catch (e) {}
-      return { theme: "dark", accent: "#c7ff3a", recentColors: [], differenceThreshold: 3 };
+      return {
+        theme: "dark", accent: "#c7ff3a", recentColors: [], differenceThreshold: 3,
+        meColor: "#ff4766", otherColor: "#22c7d6", highlightColor: "#f0a13a"
+      };
     }
 
     function loadCompareSettings() {
@@ -1450,9 +1478,18 @@
     function applySettings() {
       const rgb = hexToRgb(settings.accent);
       const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+      const meRgb = hexToRgb(settings.meColor || "#ff4766");
+      const otherRgb = hexToRgb(settings.otherColor || "#22c7d6");
+      const highlightRgb = hexToRgb(settings.highlightColor || "#f0a13a");
       document.documentElement.style.setProperty("--accent", settings.accent);
       document.documentElement.style.setProperty("--accent-rgb", rgb.r + "," + rgb.g + "," + rgb.b);
       document.documentElement.style.setProperty("--on-accent", brightness > 150 ? "#080a0d" : "#ffffff");
+      document.documentElement.style.setProperty("--me-color", settings.meColor || "#ff4766");
+      document.documentElement.style.setProperty("--me-rgb", meRgb.r + "," + meRgb.g + "," + meRgb.b);
+      document.documentElement.style.setProperty("--other-color", settings.otherColor || "#22c7d6");
+      document.documentElement.style.setProperty("--other-rgb", otherRgb.r + "," + otherRgb.g + "," + otherRgb.b);
+      document.documentElement.style.setProperty("--highlight-color", settings.highlightColor || "#f0a13a");
+      document.documentElement.style.setProperty("--highlight-rgb", highlightRgb.r + "," + highlightRgb.g + "," + highlightRgb.b);
       document.body.dataset.theme = settings.theme;
       const themeMeta = document.querySelector('meta[name="theme-color"]');
       if (themeMeta) themeMeta.setAttribute("content", settings.theme === "light" ? "#f4f5f3" : "#080a0d");
@@ -2000,7 +2037,12 @@
         '<div class="setting-row"><div class="setting-title">Comparison highlights</div>' +
           '<div class="tiny" style="margin-bottom:8px">Highlight a trait when the visible scores differ by this many points or more.</div>' +
           '<div class="difference-setting"><input id="differenceThreshold" type="range" min="1" max="9" step="1" value="' + esc(settings.differenceThreshold) + '">' +
-          '<span class="difference-setting-value" id="differenceThresholdValue">' + esc(settings.differenceThreshold) + '+ pts</span></div></div>' +
+          '<span class="difference-setting-value" id="differenceThresholdValue">' + esc(settings.differenceThreshold) + '+ pts</span></div>' +
+          '<div class="comparison-colour-grid">' +
+            '<label class="comparison-colour-choice"><input id="meCompareColour" type="color" value="' + esc(settings.meColor) + '"><span>Me</span></label>' +
+            '<label class="comparison-colour-choice"><input id="otherCompareColour" type="color" value="' + esc(settings.otherColor) + '"><span>Other</span></label>' +
+            '<label class="comparison-colour-choice"><input id="highlightCompareColour" type="color" value="' + esc(settings.highlightColor) + '"><span>Highlight</span></label>' +
+          '</div></div>' +
         '<div class="setting-row"><div class="setting-title">Manage</div><div class="settings-nav">' +
           '<button class="settings-nav-btn" id="editPlayersBtn"><span><strong>Edit players</strong><small>Names, aliases and profile pictures</small></span><span>›</span></button>' +
           '<button class="settings-nav-btn" id="editSitesBtn"><span><strong>Edit sites</strong><small>Names, nicknames and site pictures</small></span><span>›</span></button>' +
@@ -2025,6 +2067,21 @@
           saveSettings();
         };
       }
+
+      [
+        ["meCompareColour", "meColor"],
+        ["otherCompareColour", "otherColor"],
+        ["highlightCompareColour", "highlightColor"]
+      ].forEach(function(pair) {
+        const input = document.getElementById(pair[0]);
+        if (!input) return;
+        input.oninput = function() {
+          settings[pair[1]] = input.value;
+          saveSettings();
+          applySettings();
+        };
+      });
+
       document.getElementById("editPlayersBtn").onclick = function() {
         closeModal();
         navigateTo({ screen: "editPlayers", siteId: null, playerId: null });
