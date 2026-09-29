@@ -3197,6 +3197,17 @@
 
         comparisonUserSearch.onfocus = drawComparisonUsers;
         comparisonUserSearch.oninput = drawComparisonUsers;
+        comparisonUserSearch.onblur = function() {
+          window.setTimeout(function() {
+            if (comparisonUserResults) comparisonUserResults.classList.remove("show");
+          }, 120);
+        };
+        comparisonUserSearch.onkeydown = function(e) {
+          if (e.key === "Escape") {
+            comparisonUserResults.classList.remove("show");
+            comparisonUserSearch.blur();
+          }
+        };
       }
 
       const clearComparisonUser = document.getElementById("clearComparisonUser");
