@@ -558,7 +558,48 @@
       transform: translate(-50%,-50%);
     }
     .trait-hint { margin-top: 9px; text-align: right; color: var(--muted); font-size: 10px; }
+    .trait-me-scale {
+      position: relative; height: 2px; border-radius: 99px;
+      margin-top: 10px; background: rgba(255,71,102,.18);
+    }
+    .trait-me-scale::before {
+      content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+      width: var(--me-pct, 50%); border-radius: inherit;
+      background: #ff4766;
+    }
+    .trait-me-marker {
+      position: absolute; top: 50%; left: var(--me-pct, 50%);
+      width: 13px; height: 13px; border-radius: 50%;
+      background: #ff4766; border: 2px solid var(--panel);
+      box-shadow: 0 0 0 1px rgba(255,71,102,.42), 0 0 10px rgba(255,71,102,.22);
+      transform: translate(-50%,-50%);
+    }
     .survey-note { color: var(--muted); font-size: 11px; margin: 11px 2px 0; }
+
+    .comparison-panel {
+      margin-top: 10px; padding: 10px 12px;
+      border: 1px solid var(--line); border-radius: 14px;
+      background: var(--field);
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+    }
+    .comparison-option {
+      display: inline-flex; align-items: center; gap: 7px;
+      color: var(--text); font-size: 10px; font-weight: 750;
+      cursor: pointer; user-select: none;
+    }
+    .comparison-option input {
+      width: 15px; height: 15px; margin: 0; accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .comparison-option.me-option input { accent-color: #ff4766; }
+    .comparison-option.disabled { opacity: .46; cursor: default; }
+    .comparison-key {
+      display: inline-flex; align-items: center; gap: 5px;
+      margin-left: auto; color: var(--muted); font-size: 9px;
+    }
+    .comparison-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+    .comparison-dot.me { background: #ff4766; }
+    .comparison-help { flex-basis: 100%; color: var(--muted); font-size: 9px; line-height: 1.4; }
 
     .player-summary {
       margin-top: 18px;
@@ -851,6 +892,7 @@
     const STORAGE_KEY = "playerTells_v1";
     const SETTINGS_KEY = "playerTells_settings_v1";
     const USER_KEY = "playerTells_user_v1";
+    const COMPARE_KEY = "playerReads_compare_v1";
 
     const seedSites = [
       { id: "nightwire", name: "NightWire Poker", initials: "NW", nickname: "", avatar: "" },
@@ -1030,8 +1072,20 @@
       return { theme: "dark", accent: "#c7ff3a", recentColors: [] };
     }
 
+    function loadCompareSettings() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(COMPARE_KEY));
+        if (saved) return {
+          showMe: !!saved.showMe,
+          includeMe: saved.includeMe !== false
+        };
+      } catch (_) {}
+      return { showMe: false, includeMe: true };
+    }
+
     let db = loadState();
     let settings = loadSettings();
+    let compareSettings = loadCompareSettings();
 
     const ROUTE_SESSION_KEY = "playerTells_currentRoute_v1";
 
@@ -1154,6 +1208,7 @@
     function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
     function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
     function saveCurrentUser() { localStorage.setItem(USER_KEY, JSON.stringify(currentUser)); }
+    function saveCompareSettings() { localStorage.setItem(COMPARE_KEY, JSON.stringify(compareSettings)); }
 
     function currentAuthorSnapshot() {
       return { id: currentUser.id, name: currentUser.name, avatar: currentUser.avatar };
@@ -2621,14 +2676,36 @@
         (player.comments || []).length + " comments"
       ].concat(player.tags || []);
 
+      const mySurvey = mySurveyForPlayer(player);
+      const canCompareMe = !!mySurvey;
+
       const traitsHtml = traits.map(function(t) {
-        const avg = averageSurvey(player, t.key);
-        const pct = ((avg - 1) / 9) * 100;
-        const voteCount = (player.surveys || []).filter(function(s) { return Number.isFinite(Number(s[t.key])); }).length;
+        const allValidVotes = (player.surveys || []).filter(function(s) {
+          return Number.isFinite(Number(s[t.key]));
+        });
+        const averageVotes = compareSettings.includeMe
+          ? allValidVotes
+          : allValidVotes.filter(function(s) { return !authorIsCurrent(s.author); });
+        const avg = averageVotes.length
+          ? averageVotes.reduce(function(sum, s) { return sum + Number(s[t.key]); }, 0) / averageVotes.length
+          : null;
+        const pct = avg == null ? null : ((avg - 1) / 9) * 100;
+        const myValue = mySurvey && Number.isFinite(Number(mySurvey[t.key])) ? Number(mySurvey[t.key]) : null;
+        const myPct = myValue == null ? null : ((myValue - 1) / 9) * 100;
+        const voteCount = allValidVotes.length;
+
         return '<button class="trait-card" data-trait="' + t.key + '">' +
           '<div class="trait-labels"><strong>' + esc(t.left) + '</strong><strong>' + esc(t.right) + '</strong></div>' +
-          '<div class="trait-scale"><div class="trait-ticks">' + new Array(10).fill('<span></span>').join("") + '</div><span class="trait-marker" style="left:' + pct.toFixed(1) + '%"></span></div>' +
-          '<div class="trait-hint">View ' + voteCount + (voteCount === 1 ? ' vote' : ' votes') + '</div>' +
+          '<div class="trait-scale"><div class="trait-ticks">' + new Array(10).fill('<span></span>').join("") + '</div>' +
+            (pct == null ? '' : '<span class="trait-marker" style="left:' + pct.toFixed(1) + '%"></span>') +
+          '</div>' +
+          (compareSettings.showMe && myPct != null
+            ? '<div class="trait-me-scale" style="--me-pct:' + myPct.toFixed(1) + '%"><span class="trait-me-marker"></span></div>'
+            : '') +
+          '<div class="trait-hint">' +
+            (pct == null ? 'No ' + (compareSettings.includeMe ? '' : 'other ') + 'average yet · ' : '') +
+            'View ' + voteCount + (voteCount === 1 ? ' vote' : ' votes') +
+          '</div>' +
         '</button>';
       }).join("");
 
@@ -2653,6 +2730,16 @@
               esc(player.description || "No summary added yet.") +
             '</div>' +
           '</section>' +
+          '<div class="comparison-panel">' +
+            '<label class="comparison-option me-option' + (canCompareMe ? '' : ' disabled') + '">' +
+              '<input id="showMeComparison" type="checkbox"' + (compareSettings.showMe ? ' checked' : '') + (canCompareMe ? '' : ' disabled') + '> Me vs average' +
+            '</label>' +
+            '<label class="comparison-option">' +
+              '<input id="includeMeAverage" type="checkbox"' + (compareSettings.includeMe ? ' checked' : '') + '> Include me in average' +
+            '</label>' +
+            '<span class="comparison-key"><span class="comparison-dot"></span>Average <span class="comparison-dot me"></span>Me</span>' +
+            (!canCompareMe ? '<div class="comparison-help">Add your read for this player to enable Me vs average.</div>' : '') +
+          '</div>' +
           '<section class="intel">' + traitsHtml + '</section>' +
           '<div class="survey-note">The marker shows the average. Tap any trait to see every individual vote.</div>' +
           commentsHtml +
@@ -2671,6 +2758,22 @@
         toast(following ? "Player favourited" : "Player unfavourited");
       };
       document.getElementById("editSummaryBtn").onclick = function() { openEditPlayerSummary(player); };
+      const showMeComparison = document.getElementById("showMeComparison");
+      if (showMeComparison) {
+        showMeComparison.onchange = function() {
+          compareSettings.showMe = !!showMeComparison.checked;
+          saveCompareSettings();
+          renderProfile();
+        };
+      }
+      const includeMeAverage = document.getElementById("includeMeAverage");
+      if (includeMeAverage) {
+        includeMeAverage.onchange = function() {
+          compareSettings.includeMe = !!includeMeAverage.checked;
+          saveCompareSettings();
+          renderProfile();
+        };
+      }
       document.getElementById("playerHistoryBtn").onclick = function() { openPlayerHistory(player); };
       document.querySelectorAll("[data-linked-player]").forEach(function(btn) {
         btn.onclick = function() {
