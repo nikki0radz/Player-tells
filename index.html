@@ -545,17 +545,11 @@
     }
     .trait-card:hover { border-color: rgba(var(--accent-rgb),.36); }
     .trait-card.compare-alert {
-      border: 3px solid var(--highlight-color);
+      border-color: var(--line);
+      background: var(--panel);
       box-shadow:
-        0 0 0 3px rgba(var(--highlight-rgb),.14),
-        0 0 30px rgba(var(--highlight-rgb),.26),
-        0 16px 38px rgba(var(--highlight-rgb),.16);
-      background:
-        linear-gradient(rgba(var(--highlight-rgb),.085), rgba(var(--highlight-rgb),.085)),
-        var(--panel);
-    }
-    .trait-card.compare-alert .trait-labels strong {
-      text-shadow: 0 0 14px rgba(var(--highlight-rgb),.18);
+        0 0 0 1px rgba(var(--highlight-rgb),.10),
+        0 0 14px rgba(var(--highlight-rgb),.18);
     }
     .trait-difference-badge {
       display: inline-flex; align-items: center; gap: 4px;
