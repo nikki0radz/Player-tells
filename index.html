@@ -958,6 +958,56 @@
     let route = { screen: "sites", siteId: null, playerId: null };
     let directoryState = { sort: "az", filter: "all" };
 
+    function routeSnapshot(nextRoute) {
+      const r = nextRoute || route || {};
+      return {
+        screen: r.screen || "sites",
+        siteId: r.siteId || null,
+        playerId: r.playerId || null
+      };
+    }
+
+    function navigateTo(nextRoute, options) {
+      const opts = options || {};
+      route = routeSnapshot(nextRoute);
+      const currentDepth = history.state && history.state.playerTells
+        ? Number(history.state.depth || 0)
+        : 0;
+      const state = {
+        playerTells: true,
+        route: routeSnapshot(route),
+        depth: opts.replace ? currentDepth : currentDepth + 1
+      };
+
+      if (opts.replace) history.replaceState(state, "", window.location.href);
+      else history.pushState(state, "", window.location.href);
+
+      render();
+    }
+
+    function appBack(fallbackRoute) {
+      const state = history.state;
+      if (state && state.playerTells && Number(state.depth || 0) > 0) {
+        history.back();
+      } else if (fallbackRoute) {
+        navigateTo(fallbackRoute, { replace: true });
+      }
+    }
+
+    function closeModalSilently() {
+      const backdrop = document.getElementById("modalBackdrop");
+      if (!backdrop) return;
+      backdrop.classList.remove("show");
+      backdrop.setAttribute("aria-hidden", "true");
+    }
+
+    window.addEventListener("popstate", function(event) {
+      if (!event.state || !event.state.playerTells) return;
+      closeModalSilently();
+      route = routeSnapshot(event.state.route);
+      render();
+    });
+
     function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
     function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
     function saveCurrentUser() { localStorage.setItem(USER_KEY, JSON.stringify(currentUser)); }
@@ -1131,8 +1181,7 @@
       );
       document.getElementById("updatesGoPlayer").onclick = function() {
         closeModal();
-        route = { screen: "profile", siteId: player.siteId, playerId: player.id };
-        render();
+        navigateTo({ screen: "profile", siteId: player.siteId, playerId: player.id });
       };
     }
 
@@ -1279,8 +1328,7 @@
       if (settingsBtn) settingsBtn.onclick = openSettings;
       const profileBtn = document.getElementById("profileBtn");
       if (profileBtn) profileBtn.onclick = function() {
-        route = { screen: "myProfile", siteId: null, playerId: null };
-        render();
+        navigateTo({ screen: "myProfile", siteId: null, playerId: null });
       };
     }
 
@@ -1334,16 +1382,15 @@
       bindHeader();
       document.querySelectorAll("[data-site]").forEach(function(btn) {
         btn.addEventListener("click", function() {
-          route = { screen: "players", siteId: btn.dataset.site, playerId: null };
           directoryState = { sort: "az", filter: "all" };
-          render();
+          navigateTo({ screen: "players", siteId: btn.dataset.site, playerId: null });
         });
       });
     }
 
     function renderPlayers() {
       const site = siteById(route.siteId);
-      if (!site) { route.screen = "sites"; return render(); }
+      if (!site) return navigateTo({ screen: "sites", siteId: null, playerId: null }, { replace: true });
 
       const app = document.getElementById("app");
       app.innerHTML =
@@ -1373,8 +1420,7 @@
     }
 
     function goSites() {
-      route = { screen: "sites", siteId: null, playerId: null };
-      render();
+      appBack({ screen: "sites", siteId: null, playerId: null });
     }
 
     function sortLabel() {
@@ -1456,8 +1502,7 @@
           if (e.target.closest("[data-follow-player], [data-update-player]")) return;
           const player = playerById(row.dataset.player);
           if (!player) return;
-          route = { screen: "profile", siteId: player.siteId, playerId: player.id };
-          render();
+          navigateTo({ screen: "profile", siteId: player.siteId, playerId: player.id });
         });
       });
       document.querySelectorAll("[data-follow-player]").forEach(function(btn) {
@@ -1596,13 +1641,11 @@
       document.getElementById("changeHue").onclick = openColourPicker;
       document.getElementById("editPlayersBtn").onclick = function() {
         closeModal();
-        route = { screen: "editPlayers", siteId: null, playerId: null };
-        render();
+        navigateTo({ screen: "editPlayers", siteId: null, playerId: null });
       };
       document.getElementById("editSitesBtn").onclick = function() {
         closeModal();
-        route = { screen: "editSites", siteId: null, playerId: null };
-        render();
+        navigateTo({ screen: "editSites", siteId: null, playerId: null });
       };
     }
 
@@ -1834,8 +1877,7 @@
         btn.onclick = function() {
           const player = playerById(btn.dataset.personalHistoryPlayer);
           if (!player) return;
-          route = { screen: "profile", siteId: player.siteId, playerId: player.id };
-          render();
+          navigateTo({ screen: "profile", siteId: player.siteId, playerId: player.id });
         };
       });
 
@@ -1845,8 +1887,7 @@
           const id = btn.dataset.historyPlayer || btn.dataset.followedOpen;
           const player = playerById(id);
           if (!player) return;
-          route = { screen: "profile", siteId: player.siteId, playerId: player.id };
-          render();
+          navigateTo({ screen: "profile", siteId: player.siteId, playerId: player.id });
         };
       });
       document.querySelectorAll("[data-unfollow-profile]").forEach(function(btn) {
@@ -2355,8 +2396,7 @@
             const existing = playerById(btn.dataset.existingPlayer);
             if (!existing) return;
             closeModal();
-            route = { screen: "profile", siteId: existing.siteId, playerId: existing.id };
-            render();
+            navigateTo({ screen: "profile", siteId: existing.siteId, playerId: existing.id });
           };
         });
       }
@@ -2405,7 +2445,7 @@
     function renderProfile() {
       const player = playerById(route.playerId);
       const site = siteById(route.siteId);
-      if (!player || !site) { route.screen = "players"; return render(); }
+      if (!player || !site) return navigateTo({ screen: "players", siteId: route.siteId, playerId: null }, { replace: true });
 
       const aliasHtml = (player.aliases && player.aliases.length)
         ? player.aliases.map(function(a) { return '<span class="chip">' + esc(a) + '</span>'; }).join("")
@@ -2463,8 +2503,7 @@
 
       bindHeader();
       document.getElementById("backPlayers").onclick = function() {
-        route = { screen: "players", siteId: route.siteId, playerId: null };
-        render();
+        appBack({ screen: "players", siteId: route.siteId, playerId: null });
       };
       document.getElementById("addSurvey").onclick = function() { openSurvey(player); };
       document.getElementById("followPlayerBtn").onclick = function() {
@@ -2478,8 +2517,7 @@
         btn.onclick = function() {
           const linked = playerById(btn.dataset.linkedPlayer);
           if (!linked) return;
-          route = { screen: "profile", siteId: linked.siteId, playerId: linked.id };
-          render();
+          navigateTo({ screen: "profile", siteId: linked.siteId, playerId: linked.id });
         };
       });
       document.querySelectorAll("[data-trait]").forEach(function(btn) {
@@ -2707,6 +2745,11 @@
     });
 
     applySettings();
+    history.replaceState({
+      playerTells: true,
+      route: routeSnapshot(route),
+      depth: 0
+    }, "", window.location.href);
     render();
     setTimeout(function() { document.getElementById("loading").classList.add("hide"); }, 2200);
   </script>
