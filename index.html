@@ -569,7 +569,8 @@
       pointer-events: none;
     }
     .trait-ticks span {
-      width: 2px; height: 11px; border-radius: 2px; background: var(--line);
+      width: 2px; height: 11px; border-radius: 2px; background: #fff;
+      box-shadow: 0 0 0 1px rgba(0,0,0,.08);
     }
     .trait-ticks span:first-child, .trait-ticks span:last-child { height: 8px; }
     .trait-marker { z-index: 2; }
@@ -931,7 +932,10 @@
     .range-wrap { position: relative; padding-top: 3px; }
     input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
     .tick-row { display: grid; grid-template-columns: repeat(10, 1fr); padding: 1px 7px 0; }
-    .tick-row span { width: 2px; height: 5px; background: var(--line); justify-self: center; }
+    .tick-row span {
+      width: 2px; height: 5px; background: #fff; justify-self: center;
+      box-shadow: 0 0 0 1px rgba(0,0,0,.08);
+    }
 
     .vote-list { display: grid; gap: 9px; }
     .vote-row {
